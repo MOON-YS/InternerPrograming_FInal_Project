@@ -1,8 +1,8 @@
-# InternerPrograming_FInal_Project
+# 🎉InternerPrograming_FInal_Project
 공공데이터와 Map API를 활용한 프로젝트
 
 
-## 🎉 프로젝트 참여자
+## 🔥프로젝트 참여자
 | 팀장 |                         김동균                         |
 | :----: | :----------------------------------------------------: |
 | 맴버 | 김동균, 문윤식, 문정훈                                  |
