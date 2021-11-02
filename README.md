@@ -18,7 +18,6 @@
 2021.11.05 ~ 2021.12.17
 
 
-
 ## ● 프로젝트에 필요한 자료
 1. 공공데이터 포털 www.data.go.kr
 2. 지도 API (kakaomap API) https://apis.map.kakao.com/web/
