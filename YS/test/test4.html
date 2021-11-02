@@ -1,0 +1,23 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>공공데이터 API 사용 예제</title>
+</head>
+
+<body>
+  <p id="sample_data"></p>
+  <script>
+      import request from "request"
+    const url = 'http://apis.data.go.kr/6260000/BusanPblcPrkngInfoService/getPblcPrkngInfo?serviceKey=8ktFgkosFIYx7p%2FkZzmjWvD20eEUWMgZOipB0SNmBt%2BllCqqY0UoTiS0SHYConkvQ14vg31BhVGRGUFZ%2BMWBfg%3D%3D&pageNo=1&numOfRows=10&resultType=json';
+    
+    dataPane = document.getElementById("sample_data");
+    fetch(url)
+      .then(res => res.json())
+      .then(resJson => {
+        dataPane.innerText = JSON.stringify(resJson, null, 1);
+      })
+  </script>
+</body>
+
+</html>
