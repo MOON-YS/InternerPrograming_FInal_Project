@@ -1,0 +1,36 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+.header {
+    width: 100%;
+    height: 5%;
+    background: rgb(162, 162, 240);
+}
+.nav,
+.aside {
+    width: 10%;
+    height: 90%;
+    float: left;
+    background: rgb(140, 255, 236);
+}
+.sectionMap {
+    width: 90%;
+    height: 45%;
+    float: left;
+    background: rgb(107, 127, 212);
+}
+.sectionInfo {
+    width: 90%;
+    height: 45%;
+    float: left;
+    background: rgb(35, 103, 142);
+}
+.footer {
+    width: 100%;
+    height: 5%;
+    clear: both;
+    background: rgb(252, 205, 252);
+}
