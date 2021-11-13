@@ -3,6 +3,7 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
+    width: 100%;
 }
 .header {
     width: 100%;
@@ -18,13 +19,14 @@ body {
 }
 .sectionMap {
     width: 90%;
-    height: 45%;
+    height: 70%;
     float: left;
     background: rgb(107, 127, 212);
 }
 .sectionInfo {
+    
     width: 90%;
-    height: 45%;
+    height: 20%;
     float: left;
     background: rgb(35, 103, 142);
 }
