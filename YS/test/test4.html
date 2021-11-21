@@ -8,14 +8,32 @@
 <body>
   <p id="sample_data"></p>
   <script>
-    const url = 'http://apis.data.go.kr/6260000/BusanPblcPrkngInfoService/getPblcPrkngInfo?serviceKey=8ktFgkosFIYx7p%2FkZzmjWvD20eEUWMgZOipB0SNmBt%2BllCqqY0UoTiS0SHYConkvQ14vg31BhVGRGUFZ%2BMWBfg%3D%3D&pageNo=1&numOfRows=10&resultType=json';
+var appKey ='8ktFgkosFIYx7p%2FkZzmjWvD20eEUWMgZOipB0SNmBt%2BllCqqY0UoTiS0SHYConkvQ14vg31BhVGRGUFZ%2BMWBfg%3D%3D';
+var apiLink1 ='http://apis.data.go.kr/6260000/BusanCultureMusicalDetailService/getBusanCultureMusicalDetail?serviceKey=';
+var apiLink2 = '&pageNo=1&numOfRows=';
+var type ='&resultType=json';
+var numOfRows;//초기값
+var proxy = 'https://busan-show.herokuapp.com/';
+var initUrl = proxy + apiLink1 + appKey + apiLink2 + 10 + type;
+
+dataPane = document.getElementById("sample_data"); 
+
+fetch(initUrl)
+    .then((res) => res.json())
+    .then((resJson)=>{
+      
+      numOfRows = resJson.getBusanCultureMusicalDetail.totalCount;
+      var Url = proxy + apiLink1 + appKey + apiLink2 + numOfRows + type;
+      
+      fetch(Url)
+      .then((res) => res.json())
+      .then((resJson)=>{
+      dataPane.innerText = JSON.stringify(resJson.getBusanCultureMusicalDetail, null, 1);
+      
+    });
     
-    dataPane = document.getElementById("sample_data");
-    fetch(url)
-      .then(res => res.json())
-      .then(resJson => {
-        dataPane.innerText = JSON.stringify(resJson, null, 1);
-      })
+  });
+
   </script>
 </body>
 

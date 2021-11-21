@@ -14,26 +14,40 @@
         }
 
         if (isMobile()) {
-            location.replace("./mobile.html")
+            console.log("platform is mobile");
+            location.href("./mobile.html")
 
         } else {
             console.log("platform is pc");
         }
     </script>
 
+    <script type="text/javascript"src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=2d840eb6653eca8815b6f489024e0ee2&libraries=services"></script>
+    
     <header class="header">pc버전 테스트</header>
+   
     <nav class="nav">메뉴</nav>
+    
+    <aside class="aside">간단한 전체 상영 정보<br>
+        
+        <ul class="theater_data"></ul>
+    </aside>
+    
     <section class="sectionMap">
-        <div id="map" style="width:100%;height:100%;"></div>
         <!--지도 표시할 div-->
-        <!--지도 가져오기-->
-        <script type="text/javascript"src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=2d840eb6653eca8815b6f489024e0ee2&libraries=services"></script>
-           
+        <div id="map" style="width:100%;height:100%;"></div>
+        
 
-        <script src="./js/mapApi.js"></script>
     </section>
-    <section class="sectionInfo">공연 정보창</section>
-    <section class="footer">하단 크레딧</section>
+    
+    <section class="sectionInfo">공연 상세 정보창 - 공연 클릭시 활성화
+    </section>
+
+    <footer class="footer">하단 크레딧</footer>
+
+            <!--지도 가져오기-->
+    <script src="./js/mapApi.js"></script>
+    <script src="./js/musical.js"></script>
 </body>
 
 </html>
