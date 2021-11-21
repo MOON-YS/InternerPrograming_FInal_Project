@@ -31,7 +31,8 @@ body {
     background: rgb(107, 127, 212);
 }
 .sectionInfo {
-    
+    color: white;
+    overflow: scroll;
     width: 70%;
     height: 40%;
     float: left;

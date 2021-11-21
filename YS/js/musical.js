@@ -33,14 +33,14 @@ fetch(initMusicalUrl)//뮤지컬 초기 값
                         fetch(hallUrl)//전체 공연장
                             .then((res2) => res2.json())
                             .then((res2Json) => {
-                               
-                                var place = res2Json.getBusanCulturePerformPlace.item;
-                                var musicalData = resJson.getBusanCultureMusicalDetail.item;
+
+                                let place = res2Json.getBusanCulturePerformPlace.item;
+                                let musicalData = resJson.getBusanCultureMusicalDetail.item;
                                 var curMusicalData = [];//날짜순 정렬을위해 뮤지컬 목록을 저장할 배열
                                 var j = 0;
 
                                 for (var i = 0; i < numOfRows1; i++) {
-                                    if (musicalData[i]["op_ed_dt"] >= todayDate) {//종료일이 현재 날짜보다 큰경우만 실행 -> 오늘을 기점으로 이전 인경우엔 실행안함
+                                    if (musicalData[i]["op_ed_dt"] >= todayDate) {//종료일이 현재 날짜보다 크거나 같은경우만 실행 -> 오늘을 기점으로 이전 인경우엔 실행안함
                                         curMusicalData[j] = {
                                             res_no: musicalData[i]["res_no"],//뮤지컬 넘버
                                             title: musicalData[i]["title"],//뮤지컬 제목
@@ -64,7 +64,7 @@ fetch(initMusicalUrl)//뮤지컬 초기 값
                                         j++;
                                     }
                                 }
-                                dataPane = document.querySelector(".theater_data");
+
 
                                 function sortByEnd() {
                                     for (var i = curMusicalData.length - 1; i > 0; i--) {
@@ -85,16 +85,124 @@ fetch(initMusicalUrl)//뮤지컬 초기 값
                                     }
                                 }
                                 sortByEnd();
-                                
-                                for (var i = 0; i < curMusicalData.length; i++) {
-                                    let myButton = document.createElement('button');
-                                    myButton.style.margin = '2%';
+
+                                let dataPane = document.querySelector(".theater_data");
+                                let detailData = document.querySelector(".detailInfo");
+                                let isSerched = false;
+                                for (let i = 0; i < curMusicalData.length - 1; i++) {
                                     let myDiv = document.createElement('Div');
                                     let mh3 = document.createElement('p');
                                     let when = document.createElement('p');
                                     let where = document.createElement('p');
+                                    let myButton = document.createElement('button');
+                                    myButton.style.margin = '2%';
+                                    myButton.onclick = function () {
 
+                                        var c = place.length + 1;
+                                        for (var k = 0; k < place.length - 1; k++) {
+                                            if (place[k]["placeId"] == curMusicalData[i].place_id) {//해당 뮤지컬 상영 공연장 id를 공연장 목록 서비스에서 검색
+                                                c = k;
+                                                break;
+                                            }
+                                        }
+                                        if (c < place.length) {// 검색이 된경우
+                                            isSerched = true;
+                                            setCenter(place[c]["lttd"], place[c]["lngt"]);
+                                        }
+                                        else {//검색이 되지않은 경우
+                                            isSerched = false;
+                                            alert("DB에 장소정보가 없기에 카카오맵 검색결과를 표시합니다")
+                                            // 장소 검색 객체를 생성합니다
+                                            var ps = new kakao.maps.services.Places();
+  
+                                            // 키워드로 장소를 검색합니다
+                                            ps.keywordSearch("부산"+curMusicalData[i].place_nm, placesSearchCB);
 
+                                            // 키워드 검색 완료 시 호출되는 콜백함수 입니다
+                                            function placesSearchCB(data, status, pagination) {
+                                                
+                                                if (status === kakao.maps.services.Status.OK) {
+
+                                                    // 검색된 장소 위치를 기준으로 지도 범위를 재설정하기위해
+                                                    // LatLngBounds 객체에 좌표를 추가합니다
+                                                    var bounds = new kakao.maps.LatLngBounds();
+
+                                                    displayMarker(data[0]);
+                                                    bounds.extend(new kakao.maps.LatLng(data[0].y, data[0].x));
+                                                    
+                                                    // 검색된 장소 위치를 기준으로 지도 범위를 재설정합니다
+                                                    map.setBounds(bounds);
+                                                    
+                                        
+                                                    
+                                                }
+                                            }
+
+                                            // 지도에 마커를 표시하는 함수입니다
+                                            function displayMarker(place) {
+
+                                                // 마커를 생성하고 지도에 표시합니다
+                                                var marker = new kakao.maps.Marker({
+                                                    map: map,
+                                                    position: new kakao.maps.LatLng(place.y, place.x)
+                                                });
+                                            }
+
+                                            
+                                        }
+                                        //상세내용 기입할 dom 추가
+                                        let detailDiv = document.createElement('Div');
+                                        let titleD = document.createElement('p');
+                                        let whenD = document.createElement('p');
+                                        let whereD = document.createElement('p');
+                                        let whereAddr = document.createElement('p');
+                                        let showtimeD = document.createElement('p');
+                                        let runtimeD = document.createElement('p');
+                                        let themeCodes = document.createElement('p');
+                                        let ratingD = document.createElement('p');
+                                        let priceD = document.createElement('p');
+                                        let castingD = document.createElement('p');
+                                        let entD = document.createElement('p');
+                                        let avgStarD = document.createElement('p');
+                                        let dabomD = document.createElement('button');
+                                        //dom 내용 추가
+                                        titleD.textContent = curMusicalData[i].title;
+                                        whenD.textContent = "상영기간: " + curMusicalData[i].op_st_dt + '~' + curMusicalData[i].op_ed_dt;
+                                        whereD.textContent = "장소: " + curMusicalData[i].place_nm;
+                                        
+                                        if(isSerched){
+                                            whereAddr.textContent = "주소: " + place[k].addr;
+                                        }
+                                        else{
+                                            whereAddr.textContent = "주소: 검색결과 없음";
+                                        }
+                                        runtimeD.textContent = "상영 시간: " + curMusicalData[i].runTime;
+                                        showtimeD.textContent = "상영 시각: " + curMusicalData[i].showTime;
+                                        themeCodes.textContent = "테마 코드: " + curMusicalData[i].themeCodes;
+                                        ratingD.textContent = "관람 연령: " + curMusicalData[i].rating;
+                                        priceD.textContent = "가격: " + curMusicalData[i].price;
+                                        castingD.textContent = "캐스팅: " + curMusicalData[i].casting;
+                                        entD.textContent = "공급: " + curMusicalData[i].enterprise;
+                                        avgStarD.textContent = "평점: " + curMusicalData[i].avg_star;
+                                        dabomD.textContent = "다봄 에서 정보 더 보고 예매하러가기 ";
+                                        dabomD.onclick = function () { window.open(curMusicalData[i].dabom_url); }
+                                        //dom 추가ㅣ
+                                        detailData.replaceChildren(detailDiv);
+                                        detailDiv.appendChild(titleD);
+                                        detailDiv.appendChild(whenD);
+                                        detailDiv.appendChild(whereD);
+                                        detailDiv.appendChild(whereAddr);
+                                        detailDiv.appendChild(showtimeD);
+                                        detailDiv.appendChild(runtimeD);
+                                        detailDiv.appendChild(themeCodes);
+                                        detailDiv.appendChild(ratingD);
+                                        detailDiv.appendChild(priceD);
+                                        detailDiv.appendChild(castingD);
+                                        detailDiv.appendChild(entD);
+                                        detailDiv.appendChild(avgStarD);
+                                        detailDiv.appendChild(dabomD);
+
+                                    };
                                     //dom에 내용 추가
                                     mh3.textContent = curMusicalData[i].title;
                                     when.textContent = "상영기간: " + curMusicalData[i].op_st_dt + '~' + curMusicalData[i].op_ed_dt
@@ -106,7 +214,21 @@ fetch(initMusicalUrl)//뮤지컬 초기 값
                                     myDiv.appendChild(mh3);
                                     myDiv.appendChild(when);
                                     myDiv.appendChild(where);
+
                                 }
+                                //모든 공연장에 마커 표시
+                                var placeMarkers = [];
+
+                                for (var i = 0; i < place.length; i++) {
+                                    var lat = place[i]["lttd"];
+                                    var lng = place[i]["lngt"];
+                                    var placeMarker = new kakao.maps.Marker({
+                                        position: new kakao.maps.LatLng(lat, lng),
+                                        map: map
+                                    });
+                                    placeMarkers.push(placeMarker);
+                                }
+                                clusterer.addMarkers(placeMarkers);
                             })
                     })
             })
