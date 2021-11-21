@@ -17,7 +17,7 @@ const todayDate = today.toISOString(); //현재날짜를 ISOSTring으로 반환(
 fetch(initMusicalUrl)//뮤지컬 초기 값
     .then((res) => res.json())
     .then((resJson) => {
-        numOfRows1 = resJson.getBusanCultureMusicalDetail.totalCount;//전체 데이터를 불러오기위해 numOfRows에 전체 항목들 수 저장
+        numOfRows1 = resJson.getBusanCultureMusicalDetail.totalCount;//총 뮤지컬 개수
         const musicalUrl = proxy + apiLink1 + appKey + apiLink2 + numOfRows1 + type;
 
         fetch(musicalUrl)//전체 뮤지컬
@@ -27,7 +27,7 @@ fetch(initMusicalUrl)//뮤지컬 초기 값
                 fetch(initHallUrl)//공연장 초기값
                     .then((res2) => res2.json())
                     .then((res2Json) => {
-                        var numOfRows2 = res2Json.getBusanCulturePerformPlace.totalCount;
+                        var numOfRows2 = res2Json.getBusanCulturePerformPlace.totalCount;//총 공연장 개수
                         const hallUrl = proxy + hallApiLink1 + appKey + hallApiLink2 + numOfRows2 + type;
 
                         fetch(hallUrl)//전체 공연장
