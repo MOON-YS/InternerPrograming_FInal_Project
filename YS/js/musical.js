@@ -40,7 +40,7 @@ fetch(initMusicalUrl)//뮤지컬 초기 값
                                 var j = 0;
 
                                 for (var i = 0; i < numOfRows1; i++) {
-                                    if (musicalData[i]["op_st_dt"] >= todayDate) {//현재 날짜보다 큰경우만 실행 -> 오늘을 기점으로 이전 인경우엔 실행안함
+                                    if (musicalData[i]["op_ed_dt"] >= todayDate) {//종료일이 현재 날짜보다 큰경우만 실행 -> 오늘을 기점으로 이전 인경우엔 실행안함
                                         curMusicalData[j] = {
                                             res_no: musicalData[i]["res_no"],//뮤지컬 넘버
                                             title: musicalData[i]["title"],//뮤지컬 제목
@@ -107,10 +107,6 @@ fetch(initMusicalUrl)//뮤지컬 초기 값
                                     myDiv.appendChild(when);
                                     myDiv.appendChild(where);
                                 }
-
-                                
-
-
                             })
                     })
             })
