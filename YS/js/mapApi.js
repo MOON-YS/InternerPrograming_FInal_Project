@@ -1,22 +1,22 @@
 //사용자 좌표값을 저장할곳
 var usrLatitude;
 var usrLongitude; 
+var usrMarker;
+var defaultMarker = new kakao.maps.Marker({});
+var specialMarkerImage = new kakao.maps.MarkerImage(
+	'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+	new kakao.maps.Size(64, 69), new kakao.maps.Point(27, 69));
 
-//마커배열내의 특정좌표의 마커이미지를 변경합니다.
-function specMarkerInArray(lat, lng, MarkerArry){
-	
-	var imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png', // 특수 마커이미지의 주소입니다    
-    imageSize = new kakao.maps.Size(64, 69), // 마커이미지의 크기입니다
-    imageOption = {offset: new kakao.maps.Point(27, 69)}; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
 
-	var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption),
-    markerPosition = new kakao.maps.LatLng(lat, lng); // 마커가 표시될 위치입니다
-
-	// 마커를 생성합니다
-	var marker = new kakao.maps.Marker({
-    position: markerPosition, 
-    image: markerImage // 마커이미지 설정 
-});
+//마커배열내의 마커를 전부 기본마커로 리셋
+function resetMarkerImg(markerArr,img){
+	for(var i = 0; i<markerArr.length;i++){
+		markerArr[i].setImage(img);
+	}
+}
+//마커배열내 특정인덱스의 마커를 특수마커로 바꿉니다.
+function setSpMarkerImg(markerArr,k){
+		markerArr[k].setImage(specialMarkerImage);
 }
 //기본 지도
 let mapContainer = document.getElementById('map'), // 지도를 표시할 div 
@@ -37,7 +37,7 @@ function usrLocation() { //사용자 위치허가 이후설정
 	//사용자위치로 맵을 센터
 	setCenter(usrLatitude, usrLongitude);
 	// 지도에 마커를 생성하고 표시한다
-	var marker = new kakao.maps.Marker({
+	usrMarker = new kakao.maps.Marker({
 		position: new kakao.maps.LatLng(usrLatitude, usrLongitude), // 마커의 좌표
 		map: map // 마커를 표시할 지도 객체
 	});
@@ -62,13 +62,64 @@ function addMarkerToArray(lat, lng, targetMarkerArry) {
 		position: new kakao.maps.LatLng(lat, lng),
 		map: map
 	});
-	//중복값이 없으면 실행
-	if(!targetMarkerArry.includes(Marker)){
-		console.log(targetMarkerArry.indexOf(Marker));
-		targetMarkerArry.push(Marker);
-	}
+	targetMarkerArry.push(Marker);
+
 }
-//클러스터로 맵에 마커 넣기
+//클러스터로 맵에 마커 배열 삽입
 function addMarkerToMap(MarkerArry) {
 	clusterer.addMarkers(MarkerArry);
+}
+
+
+//중복체크-기능은하나 lat만 정상적으로 출력되기에 lat만으로 비교
+function isOverlap(lat,lng,markerArray){
+	var isOverlap;
+	for(var i=0; i<markerArray.length; i++){
+		var pos = markerArray[i].getPosition();
+		var posLat = pos.getLat();
+		//var posLng = pos.getLng();
+		if( lat > posLat ){//오차범위  1프로
+			if(lat - posLat < 0.00001){
+				isOverlap = true;
+				break;
+			}
+			else{
+				isOverlap = false;
+			}
+
+		}
+		else{
+			if(posLat -  lat < 0.00001){
+				isOverlap = true;
+				break;
+			}
+			else{
+				isOverlap = false;
+			}
+		}
+	}
+	return isOverlap;
+}
+
+//좌표값에 해당하는 마커 인덱스 반환-중복체크와 마찬가지로 lat만으로 확인
+function whatMarkerIndex(lat,markerArray){
+	var result;
+	for(var i=0; i<markerArray.length; i++){
+		var pos = markerArray[i].getPosition();
+		var posLat = pos.getLat();
+			if( lat > posLat ){
+				if(lat - posLat < 0.00001){
+					result = i;
+					break;
+				}
+			}
+			else{
+				if(posLat -  lat < 0.00001){
+					result = i;
+					break;
+				}
+
+			}
+	}
+	return result;
 }
