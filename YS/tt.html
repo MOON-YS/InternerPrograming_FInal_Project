@@ -379,7 +379,7 @@
         while ( scrollBar_ul.hasChildNodes() ) { scrollBar_ul.removeChild( scrollBar_ul.firstChild ); }// 태그 초기화
         for(let i = 0; i < musicalInformation.length; i++) {
               const li  = document.createElement('li');
-              li.insertAdjacentHTML('beforeend', `<strong>${musicalInformation[i].title}</strong><br><br>
+              li.insertAdjacentHTML('beforeend', `<strong style="pointer-events: none;">${musicalInformation[i].title}</strong><br><br>
               ${musicalInformation[i].op_st_dt} ~ ${musicalInformation[i].op_ed_dt}<br><br>
               ${musicalInformation[i].runtime}`);
               scrollBar_ul.appendChild(li);

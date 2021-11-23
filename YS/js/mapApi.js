@@ -18,7 +18,7 @@ function resetMarkerImg(markerArr,img){
 function setSpMarkerImg(markerArr,k){
 		markerArr[k].setImage(specialMarkerImage);
 }
-//기본 지도
+//기본 지도 그리기
 let mapContainer = document.getElementById('map'), // 지도를 표시할 div 
 	mapOption = {
 		center: new kakao.maps.LatLng(35.1379222, 129.05562775), // 지도의 중심좌표
