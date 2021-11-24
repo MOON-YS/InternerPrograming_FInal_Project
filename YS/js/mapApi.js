@@ -1,22 +1,36 @@
 //사용자 좌표값을 저장할곳
 var usrLatitude;
-var usrLongitude; 
+var usrLongitude;
 var usrMarker;
 var defaultMarker = new kakao.maps.Marker({});
-var specialMarkerImage = new kakao.maps.MarkerImage(
-	'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
-	new kakao.maps.Size(64, 69), new kakao.maps.Point(27, 69));
+const playMarkerUrl = 'https://mpv990422.duckdns.org/imgs/makerImg/green.png'
+const operaMarkerUrl = 'https://mpv990422.duckdns.org/imgs/makerImg/pink.png'
+const musicalMarkerUrl = 'https://mpv990422.duckdns.org/imgs/makerImg/purple.png'
+const overMarkerUrl = 'https://mpv990422.duckdns.org/imgs/makerImg/ivory.png'
+
+//뮤지컬 마커
+var musicalMarkerImage = new kakao.maps.MarkerImage(
+	musicalMarkerUrl,
+	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+//오페라 마커
+var operaMarkerImage = new kakao.maps.MarkerImage(
+	operaMarkerUrl,
+	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+//연극 마커
+var playMarkerImage = new kakao.maps.MarkerImage(
+	playMarkerUrl,
+	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+	//중복 마커
+var overMarkerImage = new kakao.maps.MarkerImage(
+	overMarkerUrl,
+	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
 
 
 //마커배열내의 마커를 전부 기본마커로 리셋
-function resetMarkerImg(markerArr,img){
-	for(var i = 0; i<markerArr.length;i++){
+function resetMarkerImg(markerArr, img) {
+	for (var i = 0; i < markerArr.length; i++) {
 		markerArr[i].setImage(img);
 	}
-}
-//마커배열내 특정인덱스의 마커를 특수마커로 바꿉니다.
-function setSpMarkerImg(markerArr,k){
-		markerArr[k].setImage(specialMarkerImage);
 }
 //기본 지도 그리기
 let mapContainer = document.getElementById('map'), // 지도를 표시할 div 
@@ -57,43 +71,72 @@ var clusterer = new kakao.maps.MarkerClusterer({
 	minClusterSize: 100,
 })
 //상영정보를 받아 마커 생성하여 배열에 마커 삽입
-function addMarkerToArray(lttd,lngt,targetMarkerArry) {
+function addMarkerToArray(show, targetMarkerArry) {
 	var Marker = new kakao.maps.Marker({
-		position: new kakao.maps.LatLng(lttd, lngt),
+		position: new kakao.maps.LatLng(show.lttd, show.lngt),
 	});
+
+	if (show.type == "musical") {
+		Marker.setImage(musicalMarkerImage);
+	}
+	else if (show.type == "opera") {
+		Marker.setImage(operaMarkerImage);
+	}
+	else if (show.type == "play") {
+		Marker.setImage(playMarkerImage);
+	}
+
 	targetMarkerArry.push(Marker);
-	console.log("marker added")
+
 
 }
 //클러스터로 맵에 마커 배열 삽입
 function addMarkerToMap(MarkerArr) {
-		clusterer.addMarkers(MarkerArr);
+	clusterer.addMarkers(MarkerArr);
 }
 
 
 //중복체크-기능은하나 lat만 정상적으로 출력되기에 lat만으로 비교
-function isOverlap(lat,markerArray){
+function isOverlap(lat, markerArray, type) {
 	var isOverlap;
-	for(var i=0; i<markerArray.length; i++){
+	var curType;
+
+	for (var i = 0; i < markerArray.length; i++) {
 		var pos = markerArray[i].getPosition();
+		var markerUrl = markerArray[i].T.Yj;
+		if( markerUrl == musicalMarkerUrl){//들어온 마커의 상영종류를 판별
+			curType = "musical"
+		}
+		else if(markerUrl == operaMarkerUrl){
+			curType = "opera"
+		}
+		else if(markerUrl == playMarkerUrl){
+			curType = "play"
+		}
 		var posLat = pos.getLat();
 		//var posLng = pos.getLng();
-		if( lat > posLat ){//오차범위  1프로
-			if(lat - posLat < 0.00001){
+		if (lat > posLat) {//오차범위  +=0.00001
+			if (lat - posLat < 0.00001) {
 				isOverlap = true;
+				if(curType != type){//생성할 마커와 이미 존재하는 마커가 다른 상영물일때
+				markerArray[i].setImage(overMarkerImage);
+			}
 				break;
 			}
-			else{
+			else {
 				isOverlap = false;
 			}
 
 		}
-		else{
-			if(posLat -  lat < 0.00001){
+		else {
+			if (posLat - lat < 0.00001) {
 				isOverlap = true;
+				if(curType != type){//생성할 마커와 이미 존재하는 마커가 다른 상영물일때
+					markerArray[i].setImage(overMarkerImage);
+				}
 				break;
 			}
-			else{
+			else {
 				isOverlap = false;
 			}
 		}
@@ -102,24 +145,38 @@ function isOverlap(lat,markerArray){
 }
 
 //좌표값에 해당하는 마커 인덱스 반환-중복체크와 마찬가지로 lat만으로 확인
-function getMarkerIndex(lat,markerArray){
+function getMarkerIndex(lat, markerArray) {
 	var result;
-	for(var i=0; i<markerArray.length; i++){
+	for (var i = 0; i < markerArray.length; i++) {
 		var pos = markerArray[i].getPosition();
 		var posLat = pos.getLat();
-			if( lat > posLat ){
-				if(lat - posLat < 0.00001){
-					result = i;
-					break;
-				}
+		if (lat > posLat) {
+			if (lat - posLat < 0.00001) {
+				result = i;
+				break;
 			}
-			else{
-				if(posLat -  lat < 0.00001){
-					result = i;
-					break;
-				}
+		}
+		else {
+			if (posLat - lat < 0.00001) {
+				result = i;
+				break;
+			}
 
-			}
+		}
 	}
 	return result;
+}
+//마커 크기 키우기
+function upScaleMarker(marker){
+	var newSize = new kakao.maps.Size(36, 48);
+	var newPos = new kakao.maps.Point(18, 48);
+	var markerUrl = marker.T.Yj;//마커 이미지 url;
+
+	var newMarkerImg = new kakao.maps.MarkerImage(
+		markerUrl,
+		newSize,
+		newPos
+	)
+	marker.setImage(newMarkerImg);
+	return marker;
 }

@@ -19,7 +19,6 @@ const type = '&resultType=json';
 //cors 에러 해결을 위한 프롣시
 const proxy = 'https://busan-show.herokuapp.com/';
 // else https://moonjeonghunapp1.herokuapp.com/
-//
 
 //초기 뮤지컬 url 생성
 const initMusicalUrl = proxy + musicalApiLink + appKey + commonApiLink + 1 + type;
@@ -36,7 +35,8 @@ const initThemeUrl = proxy + themeApiLink + appKey + commonApiLink + 1 + type;
 const today = new Date().toISOString();
 
 var tempLoc;
-
+//주소 검색 결과를 저장할 배열
+let resultDatas = [];
 //infos 키값
 var infosKey = ["musical", "opera", "play", "place", "theme"];//뮤지컬 0, 오페라1, 연극2, 장소3, 테마4
 //뮤지컬+오페라+연극
@@ -79,7 +79,7 @@ function keywordFilter(str) {
     var arr = str.split('');//문자별로 분할
     var indexNum;
     for (var i = 0; i < arr.length; i++) {
-        if (arr[i] == '(') { //괄호 검색
+        if (arr[i] == '(' || arr[i] == '[') { //괄호 검색
             indexNum = i;//괄호의 인덱스 저장
         }
     }
@@ -87,22 +87,99 @@ function keywordFilter(str) {
     var result = arr.join('');
     result = result.substring(0, indexNum);//제일앞부터 괄호앞까지 자르기
     //console.log(result);
-    return "부산 " + result; //스트링으로 변환하여 반환
+    return result; //스트링으로 변환하여 반환
 
+}
+//검색결과가 같은지 반환
+//공연데이터에 포함된 공연장 이름과 카맵에서 검색한 장소 둘을 비교해주는함수
+function isSame(str1, str2) {
+    //console.log("start")
+    var isSame = false;
+    //console.log("first "+str1+" "+str2)
+    if (str1 == str2) {//두 문자열이 완전 일치
+        isSame = true;
+    }
+    else {
+        var secondCompareStr1 = keywordFilter(str1).replace(/(\s*)/g, "");
+        var secondCompareStr2 = keywordFilter(str2).replace(/(\s*)/g, "");
+        //console.log("second "+secondCompareStr1+" "+secondCompareStr2);
+        if (secondCompareStr1 == secondCompareStr2) {//괄호와 공백을 제거한 두문자열의 일치
+            isSame = true;
+        }
+        else {
+            var noSpaceStr1 = str1.replace(/(\s*)/g, "");//공백제거
+            var noSpaceStr2 = str2.replace(/(\s*)/g, "");
+            var strArrS = noSpaceStr1.split('');//작은문자열(검사전)
+            var strArrB = noSpaceStr2.split('');//큰문자열(검사전)
+            if (strArrB.length < strArrS.length) {//검사하고 이름에맞게 맞춰줌
+                var temp = strArrS;
+                strArrS = strArrB;
+                strArrB = temp;
+            }
+            //console.log("third "+strArrB+" "+strArrS);
+            if (strArrB == strArrS) {//정제한 문자열이 같으면 true
+                isSame = true;
+            }
+            else {
+                for (var i = 0; i < strArrS.length; i++) {//큰문자열앞부터에 끝까지에 작은문자열이 포함되있는지 검사
+                    //console.log(strArrS);
+                    if (strArrS[i] != strArrB[i]) {//중간에 같지않으면 break하고 false값 반환
+                        //console.log("forth not Matched "+strArrS+" "+strArrB);
+                        isSame = false;
+                        var forthStr1 = keywordFilter(str1)//괄호및 공백제거
+                        forthStr1 = forthStr1.replace(/(\s*)/g, "");
+
+                        var forthStr2 = keywordFilter(str2)
+                        forthStr2 = forthStr2.replace(/(\s*)/g, "");
+
+                        forthStr1 = forthStr1.replace("부산", '');//부산 제거
+                        forthStr2 = forthStr2.replace("부산", '');
+                        //console.log("fifth "+forthStr1+" "+forthStr2);
+                        if (forthStr1 == forthStr2) {
+                            isSame = true;
+                        }
+                        else {
+                            //console.log("ended with no match")
+                            isSame = false//분기의 마지막
+                        }
+                        break;
+                    } else {
+                        isSame = true;//for문이 도중에 멈추지않았다면 true
+                    }
+                }
+            }
+        }
+    }
+
+    return isSame;
+}//show 배열에따라 마커추가
+function addMarkerByShow(show,placeMarkers){
+    for (var t = 0; t < show.length; t++) {
+        if (!(isOverlap(show[t].lttd, placeMarkers,show[t].type))) {//중복체크후 마커 추가
+            addMarkerToArray(show[t], placeMarkers);
+        }
+        else {
+        }
+    }
+    return placeMarkers;
 }
 //라디오버튼 클릭시 사용되는 함수
 function clickedShow(show, i, placeMarkers) {
-    const defaultMarkerImage = defaultMarker.getImage();
 
     let selShow = show[i];
     //센터 표기
+    //console.log(selShow);
     setCenter(selShow.lttd, selShow.lngt);
-    //마커이미지 기본이미지로 리셋
-    resetMarkerImg(placeMarkers, defaultMarkerImage);
+    placeMarkers = []
+    //마커이미지 기존이미지로 리셋
+    placeMarkers = addMarkerByShow(show, placeMarkers);
     //공연장 lttd에 해당하는 마커배열의 인덱스 get
     var t = getMarkerIndex(selShow.lttd, placeMarkers);
     //해당 인덱스의 마커 이미지 변경
-    setSpMarkerImg(placeMarkers, t);
+    placeMarkers[t] = upScaleMarker(placeMarkers[t]);
+    clusterer.clear();
+    addMarkerToMap(placeMarkers);
+    clusterer.redraw();
 
     /*
     --------------json 객체의 맴버-----------
@@ -157,7 +234,7 @@ function clickedShow(show, i, placeMarkers) {
     getDiret.onclick = function () { window.open("https://map.kakao.com/link/to/" + selShow.place_nm + "," + selShow.lttd + "," + selShow.lngt) }
     runtimeD.textContent = "상영 시간: " + selShow.runtime;
     showtimeD.textContent = "상영 시각: " + selShow.showtime;
-    
+
     //테마코드 문자화
     var themeStrArr = getTheme(selShow.theme, themeInformation);
     themeCodes.textContent = "테마 코드: " + themeStrArr;
@@ -210,7 +287,7 @@ function initialize() {
     playChecked.checked = true;
 
     var show = []
-
+    //
     for (let x = 0; x < infosKey.length - 2; x++) {
         for (let y = 0; y < infos[infosKey[x]].length; y++) {
             //key에 해당하는 Type의 상영정보 하나씩 불러오기
@@ -219,70 +296,99 @@ function initialize() {
                     infos[infosKey[x]][y].lttd = infos.place[z].lttd;//공연장의 lttd, lngt를 상영정보에 기입 
                     infos[infosKey[x]][y].lngt = infos.place[z].lngt;
                     infos[infosKey[x]][y].addr = infos.place[z].addr;
+                    infos[infosKey[x]][y].hasLoc = true;//검색 성공시 주소정보를 가지고 있음을 true값으로
                     break;//검색완료시 다음 상영정보로
                 }
-                else {//공연장 api에 없는 경우
-                    // 장소 검색 객체를 생성합니다
-                    var ps = new kakao.maps.services.Places();
-                    var searchKeyword = keywordFilter(infos[infosKey[x]][y].place_nm);
-                    // 키워드로 장소를 검색합니다
-                    ps.keywordSearch(searchKeyword, placesSearchCB);
-                    function placesSearchCB(data, status, pagination) {
-                        if (status === kakao.maps.services.Status.OK) {
-                            infos[infosKey[x]][y].lttd = data[0].y;//공연장의 lttd, lngt를 상영정보에 기입 
-                            infos[infosKey[x]][y].lngt = data[0].x;
-                            infos[infosKey[x]][y].addr = data[0].road_address_name;
+                else {
+                    infos[infosKey[x]][y].hasLoc = false;//없으면 주소정보가 없다고 삽입
+                }
+
+            }
+            if (infos[infosKey[x]][y].hasLoc == false) {//공연장 api에 없는 경우-공연장에 추가
+                // 장소 검색 객체를 생성합니다
+                var ps = new kakao.maps.services.Places();
+                // 정제한 키워드로 장소를 검색합니다
+                var searchedKeyword = keywordFilter(infos[infosKey[x]][y].place_nm);
+                ps.keywordSearch("부산 " + searchedKeyword, placesSearchCB);
+                function placesSearchCB(data, status, pagination) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        resultDatas.push(data[0]);//첫 검색결과를 전역배열에 저장
+                        if (data.length >= 2) {//결과가 2개이상이면 두번째도 저장
+                            resultDatas.push(data[1]);
                         }
                     }
-                    break;
+                    else {
+                        console.log("no Result of " + searchedKeyword);
+                    }
                 }
             }
         }
     }
-   
-    console.log(musicalChecked+", "+operaChecked+", "+playChecked)
-    console.log(infos);
+    setTimeout(() => {
+        //console.log(resultDatas);
+
+        //검색결과를 토대로 재기입
+        for (let x = 0; x < infosKey.length - 2; x++) {
+            for (let y = 0; y < infos[infosKey[x]].length; y++) {
+                //key에 해당하는 Type의 상영정보 하나씩 불러오기
+                if (infos[infosKey[x]][y].hasLoc == false) {//공연정보 없으면 실행
+                    for (var yy = 0; yy < resultDatas.length; yy++) {//전체 검색결과 하나씩 불러오기
+                        if (isSame(infos[infosKey[x]][y].place_nm, resultDatas[yy].place_name)) {//검색어와 검색결과가 같은지 체크
+                            infos[infosKey[x]][y].lttd = resultDatas[yy].y;//공연장의 lttd, lngt를 상영정보에 기입 
+                            infos[infosKey[x]][y].lngt = resultDatas[yy].x;
+                            infos[infosKey[x]][y].addr = resultDatas[yy].road_address_name;
+                            //console.log("inserted"+infos[infosKey[x]][y].place_nm + ", " + resultDatas[yy].place_name)
+                            infos[infosKey[x]][y].hasLoc = true;//검색 성공시 주소정보를 가지고 있음을 true값으로
+                            break;//검색완료시 다음 상영정보로
+                        }
+                        else {
+                            //console.log("notMatch");
+                        }
+                    }
+                }
+                else {
+                    //console.log("already has");
+                }
+            }
+        }
 
         for (var i = 0; i < infos.musical.length; i++) {
             show.push(infos.musical[i]);
-            console.log("load musicalaDone")
         }
 
 
         for (var j = 0; j < infos.opera.length; j++) {
             show.push(infos.opera[j]);
-            console.log("load operaDone")
         }
 
 
         for (var k = 0; k < infos.play.length; k++) {
             show.push(infos.play[k]);
-
-    }
-    show = sortByEnd(show);
-    placeMarkers = []; //마커 배열 초기화
-    //
-    setTimeout(function(){
-        for (var t = 0; t < show.length; t++) {
-            if (!(isOverlap(show[t].lttd, placeMarkers))) {//중복체크후 마커 추가
-                addMarkerToArray(show[t].lttd,show[t].lngt, placeMarkers);
-            }
-            else {
-                console.log("overLaped");
-            }
         }
+        show = sortByEnd(show);
+        //
+        setTimeout(function () {
+            ///////////////////////////////////////////////////////
+
+            placeMarkers = []; //마커 배열 초기화
+            placeMarkers = addMarkerByShow(show, placeMarkers);
+            addMarkerToMap(placeMarkers);
+            //console.log(placeMarkers);
+            var loadingScreen = document.querySelector('.loading');
+            loadingScreen.style.display = 'none';
+            console.log("loaded All")////////////////////////////////////////////////////////코드 실행 최종단
+            clusterer.redraw();
+        }, 2000)
+
         addMarkerToMap(placeMarkers);
-        console.log(placeMarkers);
+        //console.log(placeMarkers);
         clusterer.redraw();
-    },1000)
-    
 
-    addMarkerToMap(placeMarkers);
-    console.log(placeMarkers);
-    clusterer.redraw();
+        drawInform(show);
+        //console.log(infos);
+    }, 6000)
 
-    drawInform(show);
-    
+
 }
 //왼쪽 패널 선택된 상영 종류에따라 마커 출력/infos 내용에 공연별 공연장 위치 저장까지//초기에 1회실행되야함
 function checkBoxClicked() {
@@ -291,8 +397,8 @@ function checkBoxClicked() {
     var playChecked = document.getElementById("play").checked;
     var show = []
 
-    console.log(musicalChecked+", "+operaChecked+", "+playChecked)
-    console.log(infos);
+    //console.log(musicalChecked + ", " + operaChecked + ", " + playChecked)
+    //console.log(infos);
     if (musicalChecked) {
         for (var i = 0; i < infos.musical.length; i++) {
             show.push(infos.musical[i]);
@@ -310,37 +416,25 @@ function checkBoxClicked() {
             show.push(infos.play[k]);
         }
     }
-    placeMarkers = [];
     show = sortByEnd(show);
-    placeMarkers.pull; //마커 배열 초기화
-    for (var t = 0; t < show.length; t++) {
-        if (!(isOverlap(show[t].lttd, placeMarkers))) {//중복체크후 마커 추가
-            addMarkerToArray(show[t].lttd,show[t].lngt, placeMarkers);
-        }
-        else {
-            console.log("overLaped");
-
-        }
-    }
- 
+    placeMarkers = []; //마커 배열 초기화
+    placeMarkers = addMarkerByShow(show, placeMarkers);
     clusterer.clear();
     addMarkerToMap(placeMarkers);
-    console.log(placeMarkers);
+    //console.log(placeMarkers);
     clusterer.redraw();
-
     drawInform(show);
-    
 }
 //상영물 배열을 받고 라디오버튼을 그리는 버튼
-function drawInform(show){
-//버튼 그리기
+function drawInform(show) {
+    //버튼 그리기
     var topDiv = document.querySelector(".top");
-    while(topDiv.hasChildNodes()){
+    while (topDiv.hasChildNodes()) {
         topDiv.removeChild(topDiv.firstChild)
     }
     for (let i = 0; i < show.length; i++) {
         let labelTopDiv = document.createElement('div')
-        labelTopDiv.className="labelTop";
+        labelTopDiv.className = "labelTop";
         //버튼 정보
         let radioBtn = document.createElement('input');
         radioBtn.name = "showInfos"
@@ -349,52 +443,56 @@ function drawInform(show){
         labels.className = "labels"
         let outBox = document.createElement("div");
         outBox.className = "outBox"
-    
+
         labels.onclick = function () {
             clickedShow(show, i, placeMarkers);
             radioBtn.checked = "checked"
         }
 
-        outBox.innerHTML = '<span class="inner">'+ show[i].title + "</span>"
-        
+        var length = 15//...포함 15자
+        var shortTitle = show[i].title
+        if(shortTitle.length > length){
+            shortTitle = shortTitle.substr(0,length-2)+"..."
+        }
+        outBox.innerHTML = '<span class="inner">' + shortTitle + "</span>"
+
         //d내용 추가//type에따라 테두리색 변경
-        if(show[i].type == "musical"){
-            outBox.style.border = "5px solid #fcffb0";
+        if (show[i].type == "musical") {
+            outBox.style.border = "5px solid #603f83";
         }
-        if(show[i].type == "opera"){
-             outBox.style.border = " 5px solid #aee4ff";
+        if (show[i].type == "opera") {
+            outBox.style.border = " 5px solid #fad0c9";
         }
-        if(show[i].type == "play"){
-            outBox.style.border = " 5px solid #caa6fe";
+        if (show[i].type == "play") {
+            outBox.style.border = " 5px solid #2bae66";
         }
-        
+
         outBox.innerHTML +=
-        '<span class="inner">'+ show[i].op_st_dt + '~' + show[i].op_ed_dt+ "</span>"
-        + '<span class="inner">'+show[i].place_nm +"</span>";
-            
-        
+            '<span class="inner">' + show[i].op_st_dt + '~' + show[i].op_ed_dt + "</span>"
+            + '<span class="inner">' + show[i].place_nm + "</span>";
+
+
         //dom 추가
         topDiv.appendChild(labelTopDiv);
         labelTopDiv.appendChild(labels);
         labels.appendChild(radioBtn);
-        labels.appendChild(outBox);        
+        labels.appendChild(outBox);
     }
 }
 /////////////////////////////////////////////////////////메인함수///////////////////////////////////////////////////////////////////////
 function main() {
     //상영 종류별 데이터 정렬 0~2 상영종류, 3 장소, 4 테마
     //데이터 로드 3초 대기
-    setTimeout(function(){
+    setTimeout(function () {
         //초기화
         initialize();
+
         for (var i = 0; i < infosKey.length - 2; i++) {
             infos[infosKey[i]] = sortByEnd(infos[infosKey[i]]);
         }
         clusterer.redraw();
-        var loadingScreen = document.querySelector('.loading');
-        loadingScreen.style.display='none';
-        console.log(infos);
-    },3000)
+        //console.log(infos);
+    }, 3000)
 
 }
 /////////////////////////////////////////////////////////메인함수 끝///////////////////////////////////////////////////////////////////////
@@ -528,7 +626,6 @@ fetch(initMusicalUrl)//뮤지컬 초기 값
                         j++
                     }
                 }
-
                 infos.musical = musicalInformation;
                 //동작시킬 메인함수 호출
                 main();
