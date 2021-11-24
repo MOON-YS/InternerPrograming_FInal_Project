@@ -56,23 +56,23 @@ var clusterer = new kakao.maps.MarkerClusterer({
 	minLever: 5,
 	minClusterSize: 100,
 })
-//마커 배열에 마커 삽입
-function addMarkerToArray(lat, lng, targetMarkerArry) {
+//상영정보를 받아 마커 생성하여 배열에 마커 삽입
+function addMarkerToArray(lttd,lngt,targetMarkerArry) {
 	var Marker = new kakao.maps.Marker({
-		position: new kakao.maps.LatLng(lat, lng),
-		map: map
+		position: new kakao.maps.LatLng(lttd, lngt),
 	});
 	targetMarkerArry.push(Marker);
+	console.log("marker added")
 
 }
 //클러스터로 맵에 마커 배열 삽입
-function addMarkerToMap(MarkerArry) {
-	clusterer.addMarkers(MarkerArry);
+function addMarkerToMap(MarkerArr) {
+		clusterer.addMarkers(MarkerArr);
 }
 
 
 //중복체크-기능은하나 lat만 정상적으로 출력되기에 lat만으로 비교
-function isOverlap(lat,lng,markerArray){
+function isOverlap(lat,markerArray){
 	var isOverlap;
 	for(var i=0; i<markerArray.length; i++){
 		var pos = markerArray[i].getPosition();
@@ -102,7 +102,7 @@ function isOverlap(lat,lng,markerArray){
 }
 
 //좌표값에 해당하는 마커 인덱스 반환-중복체크와 마찬가지로 lat만으로 확인
-function whatMarkerIndex(lat,markerArray){
+function getMarkerIndex(lat,markerArray){
 	var result;
 	for(var i=0; i<markerArray.length; i++){
 		var pos = markerArray[i].getPosition();
