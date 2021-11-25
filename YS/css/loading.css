@@ -17,5 +17,5 @@
     -ms-flex-pack: center; 
     justify-content: center; /* 수평 정렬 */
 
-    z-index:3; /* 이 값으로 레이어의 위치를 조정합니다. */
+    z-index:10; /* 이 값으로 레이어의 위치를 조정합니다. */
 }

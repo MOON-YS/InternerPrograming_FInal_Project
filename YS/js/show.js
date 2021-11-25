@@ -441,6 +441,8 @@ function drawInform(show) {
         radioBtn.type = "radio"
         let labels = document.createElement('lebel');
         labels.className = "labels"
+        let outOfOutBox = document.createElement("div");
+        outOfOutBox.className = "outOfOutBox"
         let outBox = document.createElement("div");
         outBox.className = "outBox"
 
@@ -458,13 +460,18 @@ function drawInform(show) {
 
         //d내용 추가//type에따라 테두리색 변경
         if (show[i].type == "musical") {
-            outBox.style.border = "5px solid #603f83";
+            outOfOutBox.style.background = "#603f83";
+
+
         }
         if (show[i].type == "opera") {
-            outBox.style.border = " 5px solid #fad0c9";
+            outOfOutBox.style.background = "#fad0c9";
+
         }
         if (show[i].type == "play") {
-            outBox.style.border = " 5px solid #2bae66";
+            outOfOutBox.style.background = "#2bae66";
+
+
         }
 
         outBox.innerHTML +=
@@ -476,7 +483,8 @@ function drawInform(show) {
         topDiv.appendChild(labelTopDiv);
         labelTopDiv.appendChild(labels);
         labels.appendChild(radioBtn);
-        labels.appendChild(outBox);
+        labels.appendChild(outOfOutBox);
+        outOfOutBox.appendChild(outBox);
     }
 }
 /////////////////////////////////////////////////////////메인함수///////////////////////////////////////////////////////////////////////
