@@ -285,10 +285,6 @@ function getTheme(themeCode, themeInfos) {//themeCode: 테마코드 문자열, t
 
 function initialize() {
     
-    for (var i = 0; i < infosKey.length - 2; i++) {
-        infos[infosKey[i]] = sortByEnd(infos[infosKey[i]]);
-    }
-    
     var musicalChecked = document.getElementById("musical");
     var operaChecked = document.getElementById("opera");
     var playChecked = document.getElementById("play");
@@ -499,14 +495,16 @@ function drawInform(show) {
 }
 /////////////////////////////////////////////////////////메인함수///////////////////////////////////////////////////////////////////////
 function main() {
-    //상영 종류별 데이터 정렬 0~2 상영종류, 3 장소, 4 테마
-    //데이터 로드 3초 대기
-        //초기화
+        //상영 종류별 데이터 정렬 0~2 상영종류, 3 장소, 4 테마
+        setTimeout(()=>{
+            for (var i = 0; i < infosKey.length - 2; i++) {
+                infos[infosKey[i]] = sortByEnd(infos[infosKey[i]]);
+            }
+             //초기화
         initialize();
         clusterer.redraw();
         //console.log(infos);
-
-
+        }, 2000)
 }
 /////////////////////////////////////////////////////////메인함수 끝///////////////////////////////////////////////////////////////////////
 //--------------------------------------------함수 선언 끝--------------------------------------------------------------
