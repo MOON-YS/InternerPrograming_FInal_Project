@@ -53,6 +53,8 @@ var themeInformation = [];
 let dataPane = document.querySelector(".container");
 //선택한 사영물의 상세 정보를 그릴 detailData
 let detailData = document.querySelector(".detailInfo");
+//test
+let sectionMap = document.querySelector(".sectionMap");
 //----------------------------------------함수-------------------------------------
 //공연 종료일기준으로 정렬
 function sortByEnd(arrData) {
@@ -205,6 +207,9 @@ function clickedShow(show, i, placeMarkers) {
     dabom_url       다봄 url                http://busandabom.net/play/view.nm?lang=ko&amp;url=play&amp;menuCd
     ------------------------------------------*/
     //------------------------------버튼 클릭시 상세정보 띄우기-------------------
+    sectionMap.removeChild(sectionMap.firstChild);
+    let testDiv = document.createElement('div');
+    testDiv.className = "detailInfoPannel";
 
 
     //상세내용 기입할 dom 추가
@@ -224,29 +229,28 @@ function clickedShow(show, i, placeMarkers) {
     let dabomD = document.createElement('button');
     let getDiret = document.createElement('button');
     //dom 내용 추가
-    titleD.textContent = "제목: " + selShow.title;
-    whenD.textContent = "상영기간: " + selShow.op_st_dt + '~' + selShow.op_ed_dt;
-    whereD.textContent = "장소: " + selShow.place_nm;
+    titleD.innerHTML = "제목<br>" + selShow.title;
+    whenD.innerHTML = "상영기간<br>" + selShow.op_st_dt + '~' + selShow.op_ed_dt;
+    whereD.innerHTML = "장소<br>" + selShow.place_nm;
 
 
-    whereAddr.textContent = "주소: " + selShow.addr;
+    whereAddr.innerHTML = "주소<br>" + selShow.addr;
     getDiret.textContent = "길찾아보기(새창으로 이동합니다.)"
     getDiret.onclick = function () { window.open("https://map.kakao.com/link/to/" + selShow.place_nm + "," + selShow.lttd + "," + selShow.lngt) }
-    runtimeD.textContent = "상영 시간: " + selShow.runtime;
-    showtimeD.textContent = "상영 시각: " + selShow.showtime;
+    runtimeD.innerHTML = "상영 시간<br>" + selShow.runtime;
+    showtimeD.innerHTML = "상영 시각<br>" + selShow.showtime;
 
     //테마코드 문자화
     var themeStrArr = getTheme(selShow.theme, themeInformation);
-    themeCodes.textContent = "테마 코드: " + themeStrArr;
-    ratingD.textContent = "관람 연령: " + selShow.rating;
-    priceD.textContent = "가격: " + selShow.price;
-    castingD.textContent = "캐스팅: " + selShow.casting;
-    entD.textContent = "공급: " + selShow.enterprise;
-    avgStarD.textContent = "평점: " + selShow.avg_star;
+    themeCodes.innerHTML = "테마<br>" + themeStrArr;
+    ratingD.innerHTML = "관람 연령<br>" + selShow.rating;
+    priceD.innerHTML = "가격<br>" + selShow.price;
+    castingD.innerHTML = "캐스팅<br>" + selShow.casting;
+    entD.innerHTML = "공급<br>" + selShow.enterprise;
+    avgStarD.innerHTML = "평점<br>" + selShow.avg_star;
     dabomD.textContent = "다봄 에서 정보 더 보고 예매하러가기 ";
     dabomD.onclick = function () { window.open(selShow.dabom_url); }
     //dom 추가ㅣ
-    detailData.replaceChildren(detailDiv);
     detailDiv.appendChild(titleD);
     detailDiv.appendChild(whenD);
     detailDiv.appendChild(whereD);
@@ -261,6 +265,8 @@ function clickedShow(show, i, placeMarkers) {
     detailDiv.appendChild(avgStarD);
     detailDiv.appendChild(dabomD);
     detailDiv.appendChild(getDiret);
+    testDiv.replaceChildren(detailDiv);
+    sectionMap.prepend(testDiv);
 };
 //테마코드 문자열을 받고 한글 테마명을 리턴하는 함수
 function getTheme(themeCode, themeInfos) {//themeCode: 테마코드 문자열, themeInfos: 테마코드api추출 배열

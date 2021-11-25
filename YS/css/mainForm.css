@@ -34,17 +34,11 @@ body {
     text-align: center;
 }
 .sectionMap {
+    position: relative;
     width: 70%;
-    height: 50%;
+    height: 90%;
     float: left;
     background: rgb(107, 127, 212);
-}
-.sectionInfo {
-    color: white;
-    width: 70%;
-    height: 40%;
-    float: left;
-    background: rgb(35, 103, 142);
 }
 .footer {
     width: 100%;
@@ -68,4 +62,16 @@ body {
     border-radius: 15px;
     box-shadow: inset 0px 0px 5px rgba(114, 75, 255, 0);
   }
-/*라디오버튼 디자인*/
+
+.detailInfoPannel{
+    position: absolute;
+    height : 100%;
+    width: 25%;
+    right: 0px;
+    z-index: 1;
+    background:rgba(0, 0, 0, 0.5);
+    color: white;
+    overflow-y: scroll;
+    transition: .3s ease-in-out;
+    text-align: center;
+}
