@@ -284,7 +284,6 @@ function getTheme(themeCode, themeInfos) {//themeCode: 테마코드 문자열, t
 }
 
 function initialize() {
-    
     var musicalChecked = document.getElementById("musical");
     var operaChecked = document.getElementById("opera");
     var playChecked = document.getElementById("play");
@@ -430,6 +429,7 @@ function checkBoxClicked() {
     //console.log(placeMarkers);
     clusterer.redraw();
     drawInform(show);
+
 }
 //상영물 배열을 받고 라디오버튼을 그리는 버튼
 function drawInform(show) {
@@ -455,6 +455,7 @@ function drawInform(show) {
         labels.onclick = function () {
             clickedShow(show, i, placeMarkers);
             radioBtn.checked = "checked"
+            
         }
 
         var length = 15//...포함 15자
@@ -467,17 +468,12 @@ function drawInform(show) {
         //d내용 추가//type에따라 테두리색 변경
         if (show[i].type == "musical") {
             outOfOutBox.style.background = "#603f83";
-
-
         }
         if (show[i].type == "opera") {
             outOfOutBox.style.background = "#fad0c9";
-
         }
         if (show[i].type == "play") {
             outOfOutBox.style.background = "#2bae66";
-
-
         }
 
         outBox.innerHTML +=
