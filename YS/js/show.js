@@ -284,6 +284,11 @@ function getTheme(themeCode, themeInfos) {//themeCode: 테마코드 문자열, t
 }
 
 function initialize() {
+    
+    for (var i = 0; i < infosKey.length - 2; i++) {
+        infos[infosKey[i]] = sortByEnd(infos[infosKey[i]]);
+    }
+    
     var musicalChecked = document.getElementById("musical");
     var operaChecked = document.getElementById("opera");
     var playChecked = document.getElementById("play");
@@ -372,19 +377,16 @@ function initialize() {
             show.push(infos.play[k]);
         }
         show = sortByEnd(show);
-        //
-        setTimeout(function () {
-            ///////////////////////////////////////////////////////
+
 
             placeMarkers = []; //마커 배열 초기화
             placeMarkers = addMarkerByShow(show, placeMarkers);
             addMarkerToMap(placeMarkers);
             //console.log(placeMarkers);
             var loadingScreen = document.querySelector('.loading');
-            loadingScreen.style.display = 'none';
-            console.log("loaded All")////////////////////////////////////////////////////////코드 실행 최종단
+            
             clusterer.redraw();
-        }, 2000)
+
 
         addMarkerToMap(placeMarkers);
         //console.log(placeMarkers);
@@ -392,6 +394,8 @@ function initialize() {
 
         drawInform(show);
         //console.log(infos);
+        loadingScreen.style.display = 'none';
+        console.log("loaded All")////////////////////////////////////////////////////////코드 실행 최종단
     }, 6000)
 
 
@@ -497,16 +501,11 @@ function drawInform(show) {
 function main() {
     //상영 종류별 데이터 정렬 0~2 상영종류, 3 장소, 4 테마
     //데이터 로드 3초 대기
-    setTimeout(function () {
         //초기화
         initialize();
-
-        for (var i = 0; i < infosKey.length - 2; i++) {
-            infos[infosKey[i]] = sortByEnd(infos[infosKey[i]]);
-        }
         clusterer.redraw();
         //console.log(infos);
-    }, 3000)
+
 
 }
 /////////////////////////////////////////////////////////메인함수 끝///////////////////////////////////////////////////////////////////////

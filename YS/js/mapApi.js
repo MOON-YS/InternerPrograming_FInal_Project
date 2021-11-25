@@ -3,10 +3,10 @@ var usrLatitude;
 var usrLongitude;
 var usrMarker;
 var defaultMarker = new kakao.maps.Marker({});
-const playMarkerUrl = 'https://mpv990422.duckdns.org/imgs/makerImg/green.png'
-const operaMarkerUrl = 'https://mpv990422.duckdns.org/imgs/makerImg/pink.png'
-const musicalMarkerUrl = 'https://mpv990422.duckdns.org/imgs/makerImg/purple.png'
-const overMarkerUrl = 'https://mpv990422.duckdns.org/imgs/makerImg/ivory.png'
+const playMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/green.png'
+const operaMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/pink.png'
+const musicalMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/purple.png'
+const overMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/ivory.png'
 
 //뮤지컬 마커
 var musicalMarkerImage = new kakao.maps.MarkerImage(
