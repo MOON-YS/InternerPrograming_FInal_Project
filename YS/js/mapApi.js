@@ -26,12 +26,12 @@ var overMarkerImage = new kakao.maps.MarkerImage(
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
 
 
-//마커배열내의 마커를 전부 기본마커로 리셋
+/*//마커배열내의 마커를 전부 기본마커로 리셋
 function resetMarkerImg(markerArr, img) {
 	for (var i = 0; i < markerArr.length; i++) {
 		markerArr[i].setImage(img);
 	}
-}
+}*/
 //기본 지도 그리기
 let mapContainer = document.getElementById('map'), // 지도를 표시할 div 
 	mapOption = {

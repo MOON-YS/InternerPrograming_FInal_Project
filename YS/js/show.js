@@ -56,7 +56,7 @@ let detailData = document.querySelector(".detailInfo");
 //test
 let sectionMap = document.querySelector(".sectionMap");
 //----------------------------------------함수-------------------------------------
-//공연 종료일기준으로 정렬
+//공연 종료일기준으로 정렬후 시작일기준 정렬
 function sortByEnd(arrData) {
     for (var i = arrData.length - 1; i > 0; i--) {
         for (var j = 0; j < i; j++) {
@@ -236,7 +236,7 @@ function clickedShow(show, i, placeMarkers) {
 
     whereAddr.innerHTML = "주소<br>" + selShow.addr;
     getDiret.textContent = "길찾아보기(새창으로 이동합니다.)"
-    getDiret.onclick = function () { window.open("https://map.kakao.com/link/to/" + selShow.place_nm + "," + selShow.lttd + "," + selShow.lngt) }
+    getDiret.onclick = function () { window.open("https://map.kakao.com/link/to/" + keywordFilter(selShow.place_nm) + "," + selShow.lttd + "," + selShow.lngt) }
     runtimeD.innerHTML = "상영 시간<br>" + selShow.runtime;
     showtimeD.innerHTML = "상영 시각<br>" + selShow.showtime;
 
@@ -248,7 +248,7 @@ function clickedShow(show, i, placeMarkers) {
     castingD.innerHTML = "캐스팅<br>" + selShow.casting;
     entD.innerHTML = "공급<br>" + selShow.enterprise;
     avgStarD.innerHTML = "평점<br>" + selShow.avg_star;
-    dabomD.textContent = "다봄 에서 정보 더 보고 예매하러가기 ";
+    dabomD.textContent = "예매하러가기 ";
     dabomD.onclick = function () { window.open(selShow.dabom_url); }
     //dom 추가ㅣ
     detailDiv.appendChild(titleD);
@@ -293,7 +293,7 @@ function initialize() {
     playChecked.checked = true;
 
     var show = []
-    //
+    //장소대입
     for (let x = 0; x < infosKey.length - 2; x++) {
         for (let y = 0; y < infos[infosKey[x]].length; y++) {
             //key에 해당하는 Type의 상영정보 하나씩 불러오기
@@ -455,7 +455,6 @@ function drawInform(show) {
         labels.onclick = function () {
             clickedShow(show, i, placeMarkers);
             radioBtn.checked = "checked"
-            
         }
 
         var length = 15//...포함 15자
@@ -496,6 +495,7 @@ function main() {
             for (var i = 0; i < infosKey.length - 2; i++) {
                 infos[infosKey[i]] = sortByEnd(infos[infosKey[i]]);
             }
+            console.log(infos)
              //초기화
         initialize();
         clusterer.redraw();

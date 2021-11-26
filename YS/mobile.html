@@ -25,7 +25,7 @@
         width: 100%;
         height: 120%;
         margin: 0 auto;
-        background-color: antiquewhite;
+        background-color: white;
         text-align: center;
         font-weight: bold;
         font-size:30px;
@@ -39,7 +39,7 @@
         margin: 0 auto;
       }
       #dropdown{
-        display : block;
+        display : none;
         width: 100%;
         height: 5%;
         margin: 0 auto;
@@ -147,9 +147,11 @@
       
 
       #footer {
+        display:none;
+        z-index:1;
         width: 100%;
         height: 10%;
-        background-color: dimgray;
+        background-color: #113a6b;
       
       }
       #naviIcon, #mapIcon, #reservationIcon{
@@ -702,7 +704,7 @@
           var temp;
             for (let m = 0; m < performanceInfor.length - 1; m++) {
               for (let n = 0; n < performanceInfor.length - 1 - m; n++){
-                  if (performanceInfor[n].op_st_dt > performanceInfor[n + 1].op_st_dt) {
+                  if (performanceInfor[n].op_ed_dt > performanceInfor[n + 1].op_ed_dt) {
                       temp = performanceInfor[n];
                       performanceInfor[n] = performanceInfor[n + 1];
                       performanceInfor[n + 1] = temp;
@@ -733,7 +735,7 @@
             var totalCount = resJson.getBusanCultureMusicalDetail.totalCount;
             for(let i = 0; i < totalCount; i++) {
                 //현재 시각 기준 공연 예정인 뮤지컬만 추출
-                if(musical[i].op_st_dt >= today) {
+                if(musical[i].op_ed_dt >= today) {
                     musicalInformation.push(musical[i]);
                 }
             }
@@ -742,6 +744,8 @@
             showPerformance(musicalInformation, musicalMarker);
             var loadingScreen = document.querySelector('#loadingScreen');
             loadingScreen.style.display='none';
+            footer.style.display = 'block';
+            headerTag.style.display='block'
             //전역 코드의 마지막으로 선언된 비동기 함수가 끝나면 로딩창 끄기
         });
 
@@ -756,7 +760,7 @@
               let j = 0;
             for(let i = 0; i < totalCount; i++) {
                 //현재 시각 기준 공연 예정인 뮤지컬만 추출
-                if(performance[i].op_st_dt >= today) {
+                if(performance[i].op_ed_dt >= today) {
                    operaInformation[j] = performance[i];
                   j++;
                 }
@@ -774,7 +778,7 @@
             let j = 0;
             for(let i = 0; i < totalCount; i++) {
                 //현재 시각 기준 공연 예정인 뮤지컬만 추출
-                if(performance[i].op_st_dt >= today) {
+                if(performance[i].op_ed_dt >= today) {
                   playInformation[j] = performance[i];
                   j++;
                 }

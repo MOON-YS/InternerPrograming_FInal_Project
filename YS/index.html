@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
-    <title>부산 공연 정보 시스템pc버전</title>
+    <title>부산 공연 정보</title>
     <!--css파일 로드-->
     <link rel="stylesheet" href="./css/mainForm.css" type="text/css">
     <link rel="stylesheet" href="./css/radioButton.css" type="text/css">
     <link rel="stylesheet" href="./css/loading.css" type="text/css">
     <link rel="stylesheet" href="./css/slideMenu.css" type="text/css">
+    <link rel="stylesheet" href="./css/checkbox.css" type="text/css">
 
 </head>
 
@@ -31,41 +33,101 @@
         }
     </script>
 
-    <script type="text/javascript"src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=2d840eb6653eca8815b6f489024e0ee2&libraries=services,clusterer"></script>
-    
-    <header class="header">pc버전 테스트</header>
-   
+    <script type="text/javascript"
+        src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=2d840eb6653eca8815b6f489024e0ee2&libraries=services,clusterer"></script>
+
+    <header class="header">부산 공연 정보</header>
+
     <nav class="nav">
-        
-        <div class="menu_box">
-            <button type="button" class="menu_button"><i class="fas fa-bars"></i><span class=" menu_title">공연 장르 선택하기</span></button>
-            <div class="menu">
-                <br>
-                <br>
-                <ul>
-                    <li><label for="musical"><input type="checkbox" id="musical" onclick="checkBoxClicked()" checked="checked">뮤지컬</label>
-                    <li><label for="opera"><input type="checkbox" id="opera"  onclick="checkBoxClicked()" checked="checked">오페라</label>
-                    <li><label for="play"><input type="checkbox" id="play"  onclick="checkBoxClicked()" checked="checked">연극</label>
-                    <li><label for="concert"><input type="checkbox" id="concert"  onclick="checkBoxClicked()" checked="checked">콘서트(데이터삽입예정)</label>
-                    <li><label for="tradition"><input type="checkbox" id="tradition"  onclick="checkBoxClicked()" checked="checked">전통예술(데이터삽입예정)</label>
-                    <li><label for="classic"><input type="checkbox" id="classic"  onclick="checkBoxClicked()" checked="checked">클래식(데이터삽입예정)</label>
-                    <li><label for="exhibition"><input type="checkbox" id="exhibition"  onclick="checkBoxClicked()" checked="checked">전시(데이터삽입예정)</label>
-                    <li><label for="dance"><input type="checkbox" id="dance"  onclick="checkBoxClicked()" checked="checked">무용(데이터삽입예정)</label>
-                </ul>
+        <div>
+            <div class="menu_box">
+                <button type="button" class="menu_button"><i class="fas fa-bars"></i><span class=" menu_title">공연 장르
+                        선택하기</span></button>
+                <div class="menu">
+                    <br>
+                    <br>현재 뮤지컬 오페라 연극만 구현됨
+                    <div class="typeCheckBox">
+                        <div>
+                            <label>
+                                <input type="checkbox" id="musical" onclick="checkBoxClicked()" checked="checked">
+                                <span>뮤지컬</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input type="checkbox" id="opera" onclick="checkBoxClicked()" checked="checked">
+                                <span>오페라</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input type="checkbox" id="play" onclick="checkBoxClicked()" checked="checked">
+                                <span>연극</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input type="checkbox" id="concert" onclick="checkBoxClicked()" checked="">
+                                <span>콘서트</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input type="checkbox" id="tradition" onclick="checkBoxClicked()" checked="">
+                                <span>전통 예술</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input type="checkbox" id="classic" onclick="checkBoxClicked()" checked="">
+                                <span>클래식</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input type="checkbox" id="exhibition" onclick="checkBoxClicked()" checked="">
+                                <span>전시</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input type="checkbox" id="dance" onclick="checkBoxClicked()" checked="">
+                                <span>무용</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
-        <ul>
-            <li><label for="usrTown"><input type="checkbox" class="fuction" id="usrTown">우리동네만 보기(미구현)></label></li>
-        </ul>
-        
+        <div style=" display: inline-block ; height: 50px; text-align: center; position: relative; "><br>
+            <div>
+                <span>
+                    기능(구현예정)
+                </span>
+            </div>
+        </div>
 
-        
-    <!--슬라이드메뉴 이벤트 리스너-->
-    <script type="text/javascript" src="./js/slideMenu.js"></script>
+        <div class="functionMenu">
+            <div>
+                <label>
+                    <input type="checkbox" id="usrTown">
+                    <span>sample</span>
+                </label>
+            </div>
+        </div>
+
+
+
+
+
+
+        <!--슬라이드메뉴 이벤트 리스너-->
+        <script type="text/javascript" src="./js/slideMenu.js"></script>
     </nav>
-    
+
     <aside class="aside">
-        
+
         <div style="position: relative; width: 100%; height: 4%;">상영정보 리스트</div>
         <div class="container">
             <div class="top">
@@ -77,23 +139,23 @@
                         <div>
                     </label>
                     테스트 버튼-->
-                </div>
+            </div>
             <div>
-        </div>
-        
+            </div>
+
     </aside>
-    
+
     <section class="sectionMap">
         <div id="map" style="width:100%;height:100%; position: relative; z-index: 0; float: left;"></div>
         <!--지도 표시할 div-->
     </section>
-    
+
     <footer class="footer">하단 크레딧</footer>
     <div class="empty"></div>
-            <!--지도 가져오기-->
-            <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.0.min.js" ></script>
-    <script src="./js/mapApi.js"></script>
-    <script src="./js/show.js"></script>
+    <!--지도 가져오기-->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
+    <script type="text/javascript" src="./js/mapApi.js"></script>
+    <script type="text/javascript" src="./js/show.js"></script>
 </body>
 
 </html>

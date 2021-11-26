@@ -8,7 +8,7 @@
 }
 .menu_box.on {
     background-color: white;
-    border: 1px solid #1BBC9B;
+    border: 1px solid #113a6b;
 }
 .menu_button {
     display: inline-block;
@@ -18,17 +18,17 @@
     height: 100%;
     margin-bottom: 2px;
     background-color: white;
-    border: 1px solid #1BBC9B;
+    border: 1px solid #113a6b;
     transition: .2s ease-in-out;
 }
 .menu_button.on {
     width: 350px;
     transition: .3s ease-in-out;
-    background-color: #1BBC9B;
+    background-color: #113a6b;
 }
 .menu_button:hover {
     transition: .3s ease-in-out;
-    background-color: #1BBC9B;
+    background-color: #113a6b;
 }
 .menu_button:hover>.menu_title  {
     transition: .3s ease-in-out;
@@ -37,7 +37,7 @@
 
 .menu_button i {
     font-size: 15px;
-    color: #1BBC9B;
+    color: #113a6b;
 }
 .menu_button.on i {
     color: white;
@@ -48,7 +48,7 @@
     margin-left: 15px;
     font-size: 15px;
     z-index: 3;
-    color: #1BBC9B;
+    color: #113a6b;
 }
 .menu_title.on {
     color:  white;
