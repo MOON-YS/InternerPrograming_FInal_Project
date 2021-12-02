@@ -7,6 +7,11 @@ const playMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/green.png'
 const operaMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/pink.png'
 const musicalMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/purple.png'
 const overMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/ivory.png'
+const tradMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/red.png'
+const exhiMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/skyblue.png'
+const classicMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/light_green.png'
+const concertMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/yellow.png'
+const danceMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/black.png'
 
 //뮤지컬 마커
 var musicalMarkerImage = new kakao.maps.MarkerImage(
@@ -20,10 +25,30 @@ var operaMarkerImage = new kakao.maps.MarkerImage(
 var playMarkerImage = new kakao.maps.MarkerImage(
 	playMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
-	//중복 마커
-var overMarkerImage = new kakao.maps.MarkerImage(
-	overMarkerUrl,
+//전통예술 마커
+var tradMarkerImage = new kakao.maps.MarkerImage(
+	tradMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+//전시 마커
+var exhiMarkerImage = new kakao.maps.MarkerImage(
+	exhiMarkerUrl,
+	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+//클래식 마커
+var classicMarkerImage = new kakao.maps.MarkerImage(
+	classicMarkerUrl,
+	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+//콘서트 마커
+var concertMarkerImage = new kakao.maps.MarkerImage(
+	concertMarkerUrl,
+	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+//무용 마커
+var danceMarkerImage = new kakao.maps.MarkerImage(
+	danceMarkerUrl,
+	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+//중복 마커
+var overMarkerImage = new kakao.maps.MarkerImage(
+overMarkerUrl,
+new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
 
 
 /*//마커배열내의 마커를 전부 기본마커로 리셋
@@ -55,7 +80,6 @@ function usrLocation() { //사용자 위치허가 이후설정
 		position: new kakao.maps.LatLng(usrLatitude, usrLongitude), // 마커의 좌표
 		map: map // 마커를 표시할 지도 객체
 	});
-
 }
 
 navigator.geolocation.getCurrentPosition(function (pos) { // 사용자 현재위치가 받을수있을대 실행됨
@@ -85,16 +109,28 @@ function addMarkerToArray(show, targetMarkerArry) {
 	else if (show.type == "play") {
 		Marker.setImage(playMarkerImage);
 	}
-
+	else if (show.type == "trad") {
+		Marker.setImage(tradMarkerImage);
+	}
+	else if (show.type == "exhi") {
+		Marker.setImage(exhiMarkerImage);
+	}
+	else if (show.type == "classic") {
+		Marker.setImage(classicMarkerImage);
+	}
+	else if (show.type == "concert") {
+		Marker.setImage(concertMarkerImage);
+	}
+	else if (show.type == "dance") {
+		Marker.setImage(danceMarkerImage);
+	}
 	targetMarkerArry.push(Marker);
-
 
 }
 //클러스터로 맵에 마커 배열 삽입
 function addMarkerToMap(MarkerArr) {
 	clusterer.addMarkers(MarkerArr);
 }
-
 
 //중복체크-기능은하나 lat만 정상적으로 출력되기에 lat만으로 비교
 function isOverlap(lat, markerArray, type) {
@@ -112,6 +148,21 @@ function isOverlap(lat, markerArray, type) {
 		}
 		else if(markerUrl == playMarkerUrl){
 			curType = "play"
+		}
+		else if(markerUrl == tradMarkerUrl){
+			curType = "trad"
+		}
+		else if(markerUrl == exhiMarkerUrl){
+			curType = "exhi"
+		}
+		else if(markerUrl == classicMarkerUrl){
+			curType = "classic"
+		}
+		else if(markerUrl == concertMarkerUrl){
+			curType = "concert"
+		}
+		else if(markerUrl == danceMarkerUrl){
+			curType = "dance"
 		}
 		var posLat = pos.getLat();
 		//var posLng = pos.getLng();

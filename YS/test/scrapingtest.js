@@ -1,28 +1,26 @@
-function fn_count(isSub, url){
-    window.open(url);
-}
-
-
 const proxy = 'https://busan-show.herokuapp.com/';
 var request = new XMLHttpRequest();
-request.open("GET", proxy+"http://busandabom.net/play/view.nm?lang=ko&url=play&menuCd=5&res_no=2021110077");
+request.open("GET", proxy+"http://busandabom.net/play/view.nm?lang=ko&url=play&menuCd=5&res_no=2021100061");
 request.responseType = "document";
 request.onload = function (e) {
     if (request.readyState === 4) {
       if (request.status === 200) {
-        var fullImg = request.responseXML.querySelector(".boardlistView>.bottom>.tab_container2>div>div>img");
+        var imgElement = request.responseXML.querySelector("div.leftbox>img");
         var ticketing1 = request.responseXML.querySelector("#ticketing");
-        var ticketing2 = request.responseXML.querySelector(".info > a:nth-child(1)");
+        var ticketing2 = request.responseXML.querySelector(".info");
         var div = document.createElement('div')
-        console.log(ticketing1.firstElementChild.attributes[1].textContent);
-        fullImg.style.width = '100%';
-        div.appendChild(fullImg)
-        div.style.width = '406px';
-        div.style.height = '567.7px'
-        div.style.overflow ='hidden';
+        var imgUrl = imgElement.src;
+        var splitUrl = imgUrl.split('/')
+        imgUrl = 'http://busandabom.net/images/contents/'+ splitUrl[5]
+        console.log(imgUrl)
+        console.log(ticketing2);
+        var newImg = document.createElement('img')
+        newImg.src = imgUrl;
+        div.appendChild(newImg)
         document.body.appendChild(div);
         document.body.appendChild(ticketing1);
         document.body.appendChild(ticketing2);
+
       } else {
         console.error(request.status, request.statusText);
       }
@@ -33,3 +31,10 @@ request.onload = function (e) {
   };
   request.send(null);  // not a POST request, so don't send extra data
 
+	function fn_count(restype, url){
+		//카운트 수 증가
+		//url 추가가능
+		alert("본인확인으로 입장이 제한될 수 있습니다.");
+		//url 링크로 이동
+		window.open(url);
+	}

@@ -5,8 +5,18 @@ const appKey = '8ktFgkosFIYx7p%2FkZzmjWvD20eEUWMgZOipB0SNmBt%2BllCqqY0UoTiS0SHYC
 const musicalApiLink = 'http://apis.data.go.kr/6260000/BusanCultureMusicalDetailService/getBusanCultureMusicalDetail?serviceKey=';
 //오페라 url
 const operaApiLink = 'http://apis.data.go.kr/6260000/BusanCultureOperaDetailService/getBusanCultureOperaDetail?serviceKey=';
-//dusrmr url
+//연극 url
 const playApiLink = 'http://apis.data.go.kr/6260000/BusanCulturePlayDetailService/getBusanCulturePlayDetail?serviceKey=';
+//전통예술 url
+const tradApiLink = 'http://apis.data.go.kr/6260000/BusanCultureTraditionDetailService/getBusanCultureTraditionDetail?serviceKey=';
+//클래식 url
+const classicApiLink = 'http://apis.data.go.kr/6260000/BusanCultureClassicDetailService/getBusanCultureClassicDetail?serviceKey=';
+//콘서트 url
+const concertApiLink = 'http://apis.data.go.kr/6260000/BusanCultureConcertDetailService/getBusanCultureConcertDetail?serviceKey=';
+//전시 url
+const exhiApiLink = 'http://apis.data.go.kr/6260000/BusanCultureExhibitDetailService/getBusanCultureExhibitDetail?serviceKey=';
+//무용 url
+const danceApiLink = 'http://apis.data.go.kr/6260000/BusanCultureDanceDetailService/getBusanCultureDanceDetail?serviceKey=';
 //공연장 url
 const placeApiLink = 'http://apis.data.go.kr/6260000/BusanCulturePerformPlaceService/getBusanCulturePerformPlace?serviceKey=';
 //테마 정보 url
@@ -26,6 +36,16 @@ const initMusicalUrl = proxy + musicalApiLink + appKey + commonApiLink + 1 + typ
 const initOperaUrl = proxy + operaApiLink + appKey + commonApiLink + 1 + type;
 //초기 오페라 url 생성
 const initPlayUrl = proxy + playApiLink + appKey + commonApiLink + 1 + type;
+//초기 전통예술 url
+const initTradUrl = proxy + tradApiLink + appKey + commonApiLink + 1 + type;
+//초기 전시 url
+const initExhiUrl = proxy + exhiApiLink + appKey + commonApiLink + 1 + type;
+//초기 클래식 url
+const initClassicUrl = proxy + classicApiLink + appKey + commonApiLink + 1 + type;
+//초기 콘서트 url
+const initConcertUrl = proxy + concertApiLink + appKey + commonApiLink + 1 + type;
+//초기 무용 url
+const initDanceUrl = proxy + danceApiLink + appKey + commonApiLink + 1 + type;
 //초기 공연장 url 생성
 const initPlaceUrl = proxy + placeApiLink + appKey + commonApiLink + 1 + type;
 //초기 테마정보 url 생성
@@ -38,7 +58,7 @@ var tempLoc;
 //주소 검색 결과를 저장할 배열
 let resultDatas = [];
 //infos 키값
-var infosKey = ["musical", "opera", "play", "place", "theme"];//뮤지컬 0, 오페라1, 연극2, 장소3, 테마4
+var infosKey = ["musical", "opera", "play", "trad","exhi","classic","concert", "place", "theme"];
 //뮤지컬+오페라+연극
 var infos = []
 //공연장 목록을 저장할 배열
@@ -287,10 +307,20 @@ function initialize() {
     var musicalChecked = document.getElementById("musical");
     var operaChecked = document.getElementById("opera");
     var playChecked = document.getElementById("play");
+    var tradChecked = document.getElementById("trad");
+    var exhiChecked = document.getElementById("exhi");
+    var classicChecked = document.getElementById("classic");
+    var concertChecked = document.getElementById("concert");
+    var danceChecked = document.getElementById("dance");
 
     musicalChecked.checked = true;
     operaChecked.checked = true;
     playChecked.checked = true;
+    tradChecked.checked = true;
+    exhiChecked.checked = true;
+    classicChecked.checked = true;
+    concertChecked.checked = true;
+    danceChecked.checked = true;
 
     var show = []
     //장소대입
@@ -362,25 +392,36 @@ function initialize() {
             show.push(infos.musical[i]);
         }
 
-
         for (var j = 0; j < infos.opera.length; j++) {
             show.push(infos.opera[j]);
         }
-
-
         for (var k = 0; k < infos.play.length; k++) {
             show.push(infos.play[k]);
         }
+        for (var l = 0; l < infos.trad.length; l++) {
+            show.push(infos.trad[l]);
+        }
+        for (var m = 0; m < infos.exhi.length; m++) {
+            show.push(infos.exhi[m]);
+        }
+        for (var n = 0; n < infos.classic.length; n++) {
+            show.push(infos.classic[n]);
+        }
+        for (var o = 0; o < infos.concert.length; o++) {
+            show.push(infos.concert[o]);
+        }
+        for (var p = 0; p < infos.dance.length; p++) {
+            show.push(infos.dance[p]);
+        }
         show = sortByEnd(show);
 
-
-            placeMarkers = []; //마커 배열 초기화
-            placeMarkers = addMarkerByShow(show, placeMarkers);
-            addMarkerToMap(placeMarkers);
-            //console.log(placeMarkers);
-            var loadingScreen = document.querySelector('.loading');
+        placeMarkers = []; //마커 배열 초기화
+        placeMarkers = addMarkerByShow(show, placeMarkers);
+        addMarkerToMap(placeMarkers);
+        //console.log(placeMarkers);
+        var loadingScreen = document.querySelector('.loading');
             
-            clusterer.redraw();
+        clusterer.redraw();
 
 
         addMarkerToMap(placeMarkers);
@@ -400,6 +441,11 @@ function checkBoxClicked() {
     var musicalChecked = document.getElementById("musical").checked;
     var operaChecked = document.getElementById("opera").checked;
     var playChecked = document.getElementById("play").checked;
+    var tradChecked = document.getElementById("trad").checked;
+    var exhiChecked = document.getElementById("exhi").checked;
+    var classicChecked = document.getElementById("classic").checked;
+    var concertChecked = document.getElementById("concert").checked;
+    var danceChecked = document.getElementById("dance").checked;
     var show = []
 
     //console.log(musicalChecked + ", " + operaChecked + ", " + playChecked)
@@ -407,18 +453,49 @@ function checkBoxClicked() {
     if (musicalChecked) {
         for (var i = 0; i < infos.musical.length; i++) {
             show.push(infos.musical[i]);
-            console.log("load musicalaDone")
+            console.log("load musicala Done")
         }
     }
     if (operaChecked) {
         for (var j = 0; j < infos.opera.length; j++) {
             show.push(infos.opera[j]);
-            console.log("load operaDone")
+            console.log("load opera Done")
         }
     }
     if (playChecked) {
         for (var k = 0; k < infos.play.length; k++) {
             show.push(infos.play[k]);
+            console.log("load play Done")
+        }
+    }
+    if (tradChecked){
+        for (var l = 0; l < infos.trad.length; l++) {
+            show.push(infos.trad[l]);
+            console.log("load tradition Done")
+        }
+    }
+    if (exhiChecked){
+        for (var m = 0; m < infos.exhi.length; m++) {
+            show.push(infos.exhi[m]);
+            console.log("load exhibition Done")
+        }
+    }
+    if (classicChecked){
+        for (var n = 0; n < infos.classic.length; n++) {
+            show.push(infos.classic[n]);
+            console.log("load classic Done")
+        }
+    }
+    if (concertChecked){
+        for (var o = 0; o < infos.concert.length; o++) {
+            show.push(infos.concert[o]);
+            console.log("load concert Done")
+        }
+    }
+    if (danceChecked){
+        for (var p = 0; p < infos.dance.length; p++) {
+            show.push(infos.dance[p]);
+            console.log("load dance Done")
         }
     }
     show = sortByEnd(show);
@@ -468,17 +545,30 @@ function drawInform(show) {
         if (show[i].type == "musical") {
             outOfOutBox.style.background = "#603f83";
         }
-        if (show[i].type == "opera") {
+        else if (show[i].type == "opera") {
             outOfOutBox.style.background = "#fad0c9";
         }
-        if (show[i].type == "play") {
+        else if (show[i].type == "play") {
             outOfOutBox.style.background = "#2bae66";
         }
-
+        else if (show[i].type == "trad") {
+            outOfOutBox.style.background = "#b72e2e";
+        }
+        else if (show[i].type == "exhi") {
+            outOfOutBox.style.background = "#29abe2";
+        }
+        else if (show[i].type == "classic") {
+            outOfOutBox.style.background = "#ced46a";
+        }
+        else if (show[i].type == "concert") {
+            outOfOutBox.style.background = "#f2aa4c";
+        }
+        else if (show[i].type == "dance") {
+            outOfOutBox.style.background = "#191919";
+        }
         outBox.innerHTML +=
             '<span class="inner">' + show[i].op_st_dt + '~' + show[i].op_ed_dt + "</span>"
             + '<span class="inner">' + show[i].place_nm + "</span>";
-
 
         //dom 추가
         topDiv.appendChild(labelTopDiv);
@@ -500,7 +590,7 @@ function main() {
         initialize();
         clusterer.redraw();
         //console.log(infos);
-        }, 2000)
+        }, 3000)
 }
 /////////////////////////////////////////////////////////메인함수 끝///////////////////////////////////////////////////////////////////////
 //--------------------------------------------함수 선언 끝--------------------------------------------------------------
@@ -605,6 +695,150 @@ fetch(initPlayUrl)//연극 초기값
                 infos.play = playInformation;
             });
     });
+//전통예술 fetch
+fetch(initTradUrl)// 초기값
+    .then((res) => res.json())
+    .then((resJson) => {
+        //총 개수 파라미터
+        var numOfRows = resJson.getBusanCultureTraditionDetail.totalCount;
+        //총 개수 만큼 불러오는 url
+        var tradUrl = proxy + tradApiLink + appKey + commonApiLink + numOfRows + type;
+        fetch(tradUrl)//전체 연극
+            .then((res) => res.json())
+            .then((resJson) => {
+                //테스트 문구-done
+                //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+                //목록을 저장할 배열
+                var j = 0;
+                var tradInformation = [];
+                var trad = resJson.getBusanCultureTraditionDetail.item;
+                for (var i = 0; i < numOfRows; i++) {
+                    //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
+                    if (trad[i].op_ed_dt >= today) {
+                        tradInformation.push(trad[i]);
+                        tradInformation[j].type = "trad";
+                        j++;
+                    }
+                }
+                infos.trad = tradInformation;
+            });
+    });
+
+//전시 fetch
+fetch(initExhiUrl)// 초기값
+.then((res) => res.json())
+.then((resJson) => {
+    //총 개수 파라미터
+    var numOfRows = resJson.getBusanCultureExhibitDetail.totalCount;
+    //총 개수 만큼 불러오는 url
+    var exhiUrl = proxy + exhiApiLink + appKey + commonApiLink + numOfRows + type;
+    fetch(exhiUrl)//전체 연극
+        .then((res) => res.json())
+        .then((resJson) => {
+            //테스트 문구-done
+            //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+            //목록을 저장할 배열
+            var j = 0;
+            var exhiInformation = [];
+            var exhi = resJson.getBusanCultureExhibitDetail.item;
+            for (var i = 0; i < numOfRows; i++) {
+                //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
+                if (exhi[i].op_ed_dt >= today) {
+                    exhiInformation.push(exhi[i]);
+                    exhiInformation[j].type = "exhi";
+                    j++;
+                }
+            }
+            infos.exhi = exhiInformation;
+        });
+});
+
+//클래식 fetch
+fetch(initClassicUrl)// 초기값
+.then((res) => res.json())
+.then((resJson) => {
+    //총 개수 파라미터
+    var numOfRows = resJson.getBusanCultureClassicDetail.totalCount;
+    //총 개수 만큼 불러오는 url
+    var classicUrl = proxy + classicApiLink + appKey + commonApiLink + numOfRows + type;
+    fetch(classicUrl)//전체 연극
+        .then((res) => res.json())
+        .then((resJson) => {
+            //테스트 문구-done
+            //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+            //목록을 저장할 배열
+            var j = 0;
+            var classicInformation = [];
+            var classic = resJson.getBusanCultureClassicDetail.item;
+            for (var i = 0; i < numOfRows; i++) {
+                //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
+                if (classic[i].op_ed_dt >= today) {
+                    classicInformation.push(classic[i]);
+                    classicInformation[j].type = "classic";
+                    j++;
+                }
+            }
+            infos.classic = classicInformation;
+        });
+});
+
+//콘서트fetch
+fetch(initConcertUrl)// 초기값
+.then((res) => res.json())
+.then((resJson) => {
+    //총 개수 파라미터
+    var numOfRows = resJson.getBusanCultureConcertDetail.totalCount;
+    //총 개수 만큼 불러오는 url
+    var concertUrl = proxy + concertApiLink + appKey + commonApiLink + numOfRows + type;
+    fetch(concertUrl)//전체 연극
+        .then((res) => res.json())
+        .then((resJson) => {
+            //테스트 문구-done
+            //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+            //목록을 저장할 배열
+            var j = 0;
+            var concertInformation = [];
+            var concert = resJson.getBusanCultureConcertDetail.item;
+            for (var i = 0; i < numOfRows; i++) {
+                //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
+                if (concert[i].op_ed_dt >= today) {
+                    concertInformation.push(concert[i]);
+                    concertInformation[j].type = "concert";
+                    j++;
+                }
+            }
+            infos.concert = concertInformation;
+        });
+});
+
+//무용 fetch
+fetch(initDanceUrl)// 초기값
+.then((res) => res.json())
+.then((resJson) => {
+    //총 개수 파라미터
+    var numOfRows = resJson.getBusanCultureDanceDetail.totalCount;
+    //총 개수 만큼 불러오는 url
+    var danceUrl = proxy + danceApiLink + appKey + commonApiLink + numOfRows + type;
+    fetch(danceUrl)//전체 연극
+        .then((res) => res.json())
+        .then((resJson) => {
+            //테스트 문구-done
+            //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+            //목록을 저장할 배열
+            var j = 0;
+            var danceInformation = [];
+            var dance = resJson.getBusanCultureDanceDetail.item;
+            for (var i = 0; i < numOfRows; i++) {
+                //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
+                if (dance[i].op_ed_dt >= today) {
+                    danceInformation.push(dance[i]);
+                    danceInformation[j].type = "dance";
+                    j++;
+                }
+            }
+            infos.dance = danceInformation;
+        });
+});
 
 
 //뮤지컬 정보추출및 전반적인 동작코드
