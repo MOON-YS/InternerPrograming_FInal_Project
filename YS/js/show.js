@@ -19,6 +19,8 @@ const exhiApiLink = 'http://apis.data.go.kr/6260000/BusanCultureExhibitDetailSer
 const danceApiLink = 'http://apis.data.go.kr/6260000/BusanCultureDanceDetailService/getBusanCultureDanceDetail?serviceKey=';
 //공연장 url
 const placeApiLink = 'http://apis.data.go.kr/6260000/BusanCulturePerformPlaceService/getBusanCulturePerformPlace?serviceKey=';
+//전시공간 url
+const exPlaceApiLink = 'http://apis.data.go.kr/6260000/BusanCultureExhibitPlaceService/getBusanCultureExhibitPlace?serviceKey=';
 //테마 정보 url
 const themeApiLink = 'http://apis.data.go.kr/6260000/BusanCultureThemeCodeService/getBusanCultureThemeCode?serviceKey=';
 //공용링크
@@ -48,6 +50,8 @@ const initConcertUrl = proxy + concertApiLink + appKey + commonApiLink + 1 + typ
 const initDanceUrl = proxy + danceApiLink + appKey + commonApiLink + 1 + type;
 //초기 공연장 url 생성
 const initPlaceUrl = proxy + placeApiLink + appKey + commonApiLink + 1 + type;
+//초기 전시공간 url 생성
+const initExPlaceUrl = proxy + exPlaceApiLink + appKey + commonApiLink + 1 + type;
 //초기 테마정보 url 생성
 const initThemeUrl = proxy + themeApiLink + appKey + commonApiLink + 1 + type;
 
@@ -105,12 +109,10 @@ function keywordFilter(str) {
             indexNum = i;//괄호의 인덱스 저장
         }
     }
-
     var result = arr.join('');
     result = result.substring(0, indexNum);//제일앞부터 괄호앞까지 자르기
     //console.log(result);
     return result; //스트링으로 변환하여 반환
-
 }
 //검색결과가 같은지 반환
 //공연데이터에 포함된 공연장 이름과 카맵에서 검색한 장소 둘을 비교해주는함수
@@ -161,8 +163,18 @@ function isSame(str1, str2) {
                             isSame = true;
                         }
                         else {
-                            //console.log("ended with no match")
-                            isSame = false//분기의 마지막
+                            //특수케이스1 부산사직실내체육관 & 부산사직종합운동장 실내체육관
+                            if(str1 == "부산사직실내체육관" && str2 == "부산사직종합운동장 실내체육관"){
+                                isSame = true;
+                            }
+                            //특수케이스2 PANACA B & 파나카 B
+                            else if(str1 == "PANACA B" && str2 == "파나카B"){
+                                isSame = true;
+                            }
+                            else{
+                                //console.log("ended with no match "+str1 +", "+ str2)
+                                isSame = false//분기의 마지막
+                            }
                         }
                         break;
                     } else {
@@ -172,9 +184,10 @@ function isSame(str1, str2) {
             }
         }
     }
-
     return isSame;
-}//show 배열에따라 마커추가
+}
+
+//show 배열에따라 마커추가
 function addMarkerByShow(show,placeMarkers){
     for (var t = 0; t < show.length; t++) {
         if (!(isOverlap(show[t].lttd, placeMarkers,show[t].type))) {//중복체크후 마커 추가
@@ -202,7 +215,6 @@ function clickedShow(show, i, placeMarkers) {
     clusterer.clear();
     addMarkerToMap(placeMarkers);
     clusterer.redraw();
-
     /*
     --------------json 객체의 맴버-----------
     변수 명         설명                   샘플데이터
@@ -231,7 +243,6 @@ function clickedShow(show, i, placeMarkers) {
     let testDiv = document.createElement('div');
     testDiv.className = "detailInfoPannel";
 
-
     //상세내용 기입할 dom 추가
     let detailDiv = document.createElement('Div');
     let titleD = document.createElement('p');
@@ -248,11 +259,11 @@ function clickedShow(show, i, placeMarkers) {
     let avgStarD = document.createElement('p');
     let dabomD = document.createElement('button');
     let getDiret = document.createElement('button');
+    
     //dom 내용 추가
     titleD.innerHTML = "제목<br>" + selShow.title;
     whenD.innerHTML = "상영기간<br>" + selShow.op_st_dt + '~' + selShow.op_ed_dt;
     whereD.innerHTML = "장소<br>" + selShow.place_nm;
-
 
     whereAddr.innerHTML = "주소<br>" + selShow.addr;
     getDiret.textContent = "길찾아보기(새창으로 이동합니다.)"
@@ -270,6 +281,7 @@ function clickedShow(show, i, placeMarkers) {
     avgStarD.innerHTML = "평점<br>" + selShow.avg_star;
     dabomD.textContent = "예매하러가기 ";
     dabomD.onclick = function () { window.open(selShow.dabom_url); }
+    
     //dom 추가ㅣ
     detailDiv.appendChild(titleD);
     detailDiv.appendChild(whenD);
@@ -304,6 +316,7 @@ function getTheme(themeCode, themeInfos) {//themeCode: 테마코드 문자열, t
 }
 
 function initialize() {
+    //장르별 체크박스 가져오기
     var musicalChecked = document.getElementById("musical");
     var operaChecked = document.getElementById("opera");
     var playChecked = document.getElementById("play");
@@ -312,7 +325,8 @@ function initialize() {
     var classicChecked = document.getElementById("classic");
     var concertChecked = document.getElementById("concert");
     var danceChecked = document.getElementById("dance");
-
+    
+    //체크박스 체크(초기값 지정)
     musicalChecked.checked = true;
     operaChecked.checked = true;
     playChecked.checked = true;
@@ -345,6 +359,10 @@ function initialize() {
                 var ps = new kakao.maps.services.Places();
                 // 정제한 키워드로 장소를 검색합니다
                 var searchedKeyword = keywordFilter(infos[infosKey[x]][y].place_nm);
+                //예외사항
+                if(infos[infosKey[x]][y].place_nm == "PANACA B"){
+                    searchedKeyword = "파나카 B"
+                }
                 ps.keywordSearch("부산 " + searchedKeyword, placesSearchCB);
                 function placesSearchCB(data, status, pagination) {
                     if (status === kakao.maps.services.Status.OK) {
@@ -362,7 +380,6 @@ function initialize() {
     }
     setTimeout(() => {
         //console.log(resultDatas);
-
         //검색결과를 토대로 재기입
         for (let x = 0; x < infosKey.length - 2; x++) {
             for (let y = 0; y < infos[infosKey[x]].length; y++) {
@@ -378,7 +395,7 @@ function initialize() {
                             break;//검색완료시 다음 상영정보로
                         }
                         else {
-                            //console.log("notMatch");
+                            //console.log("notMatch: "+infos[infosKey[x]][y].place_nm + ", "+resultDatas[yy].place_name);
                         }
                     }
                 }
@@ -387,11 +404,9 @@ function initialize() {
                 }
             }
         }
-
         for (var i = 0; i < infos.musical.length; i++) {
             show.push(infos.musical[i]);
         }
-
         for (var j = 0; j < infos.opera.length; j++) {
             show.push(infos.opera[j]);
         }
@@ -423,7 +438,6 @@ function initialize() {
             
         clusterer.redraw();
 
-
         addMarkerToMap(placeMarkers);
         //console.log(placeMarkers);
         clusterer.redraw();
@@ -433,8 +447,6 @@ function initialize() {
         loadingScreen.style.display = 'none';
         console.log("loaded All")////////////////////////////////////////////////////////코드 실행 최종단
     }, 6000)
-
-
 }
 //왼쪽 패널 선택된 상영 종류에따라 마커 출력/infos 내용에 공연별 공연장 위치 저장까지//초기에 1회실행되야함
 function checkBoxClicked() {
@@ -518,6 +530,7 @@ function drawInform(show) {
     for (let i = 0; i < show.length; i++) {
         let labelTopDiv = document.createElement('div')
         labelTopDiv.className = "labelTop";
+        
         //버튼 정보
         let radioBtn = document.createElement('input');
         radioBtn.name = "showInfos"
@@ -533,7 +546,6 @@ function drawInform(show) {
             clickedShow(show, i, placeMarkers);
             radioBtn.checked = "checked"
         }
-
         var length = 15//...포함 15자
         var shortTitle = show[i].title
         if(shortTitle.length > length){
@@ -624,7 +636,6 @@ fetch(initPlaceUrl)//공연장 초기값
         var numOfRowsPlace = resJson.getBusanCulturePerformPlace.totalCount;
         //총 공연장 갯수만큼 불러오는 url
         var placeUrl = proxy + placeApiLink + appKey + commonApiLink + numOfRowsPlace + type;
-
         fetch(placeUrl)//전체 공연장
             .then((res) => res.json())
             .then((resJson) => {
@@ -635,9 +646,30 @@ fetch(initPlaceUrl)//공연장 초기값
                     placesInformation.push(place[i]);// 공연장 데이터를 총 공연장갯수만큼 삽입
                     placesInformation[i].type = "place";
                 }
-                infos.place = placesInformation;
             });
     });
+    
+//전시공간 정보 추출
+fetch(initExPlaceUrl)//공연장 초기값
+.then((res) => res.json())
+.then((resJson) => {
+    //총 공연장 개수 파라미터
+    var numOfRowsPlace = resJson.getBusanCultureExhibitPlace.totalCount;
+    //총 공연장 갯수만큼 불러오는 url
+    var exPlaceUrl = proxy + exPlaceApiLink + appKey + commonApiLink + numOfRowsPlace + type;
+    fetch(exPlaceUrl)//전체 공연장
+        .then((res) => res.json())
+        .then((resJson) => {
+            //테스트 문구-done
+            //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+            var exPlace = resJson.getBusanCultureExhibitPlace.item;
+            for (let i = 0; i < numOfRowsPlace; i++) {
+                placesInformation.push(exPlace[i]);// 공연장 데이터를 총 공연장갯수만큼 삽입
+                placesInformation[i].type = "place";
+            }
+            infos.place = placesInformation;
+        });
+});
 //오페라 정보 fetch
 fetch(initOperaUrl)//오페라 초기값
     .then((res) => res.json())
