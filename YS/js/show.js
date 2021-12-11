@@ -57,17 +57,32 @@ const initThemeUrl = proxy + themeApiLink + appKey + commonApiLink + 1 + type;
 
 //현재날짜를 ISOSTring으로 반환(YYYY-MM-DDTtime:min:sec)-json 날짜와 비교가능
 const today = new Date().toISOString();
-
-var tempLoc;
+//각데이터별 fetch 완료 토큰
+var musicalLoaded = false;
+var operaLoaded = false;
+var playLoaded = false;
+var tradLoaded = false;
+var exhiLoaded = false;
+var classicLoaded = false;
+var concertLoaded = false;
+var danceLoaded = false;
+var placeLoaded = false;
+var exPlaceLoaded = false;
+var themeLoaded = false;
+//위경도검색횟수 카운터
+var searchCnt = 0;
+//장소없는 배열 카운터
+var noPlaceCnt = 0;
 //주소 검색 결과를 저장할 배열
 let resultDatas = [];
 //infos 키값
-var infosKey = ["musical", "opera", "play", "trad","exhi","classic","concert", "place", "theme"];
+var infosKey = ["musical", "opera", "play", "trad", "exhi", "classic", "concert", "place", "theme"];
 //뮤지컬+오페라+연극
 var infos = []
 //공연장 목록을 저장할 배열
 var placesInformation = [];
-
+//
+var curShows = [];
 //공연장 마커
 var placeMarkers = [];
 //테마 정보 저장할 배열
@@ -80,6 +95,34 @@ let detailData = document.querySelector(".detailInfo");
 //test
 let sectionMap = document.querySelector(".sectionMap");
 //----------------------------------------함수-------------------------------------
+//포스트 이미지 url 반환 함수
+function getImgUrl(dabomUrl) {//다봄 url삽입
+    return new Promise(function (resolve, reject) {
+        var request = new XMLHttpRequest();
+        request.open("GET", proxy + dabomUrl);
+        request.responseType = "document";
+        request.onload = function () {
+            if (request.readyState === 4) {
+                if (request.status === 200) {
+                    var imgElement = request.responseXML.querySelector("div.leftbox>img");
+                    var imgUrl = imgElement.src;
+                    var splitUrl = imgUrl.split('/')
+                    imgurl = 'http://busandabom.net/images/contents/' + splitUrl[5]
+                    //console.log(imgurl)
+                    resolve(imgurl)
+
+                } else {
+                    console.error(request.status, request.statusText);
+                }
+            }
+        };
+        request.onerror = function (e) {
+            console.error(request.status, request.statusText);
+        };
+        request.send(null);  // not a POST request, so don't send extra data
+    });
+}
+
 //공연 종료일기준으로 정렬후 시작일기준 정렬
 function sortByEnd(arrData) {
     for (var i = arrData.length - 1; i > 0; i--) {
@@ -164,14 +207,14 @@ function isSame(str1, str2) {
                         }
                         else {
                             //특수케이스1 부산사직실내체육관 & 부산사직종합운동장 실내체육관
-                            if(str1 == "부산사직실내체육관" && str2 == "부산사직종합운동장 실내체육관"){
+                            if (str1 == "부산사직실내체육관" && str2 == "부산사직종합운동장 실내체육관") {
                                 isSame = true;
                             }
                             //특수케이스2 PANACA B & 파나카 B
-                            else if(str1 == "PANACA B" && str2 == "파나카B"){
+                            else if (str1 == "PANACA B" && str2 == "파나카B") {
                                 isSame = true;
                             }
-                            else{
+                            else {
                                 //console.log("ended with no match "+str1 +", "+ str2)
                                 isSame = false//분기의 마지막
                             }
@@ -188,9 +231,9 @@ function isSame(str1, str2) {
 }
 
 //show 배열에따라 마커추가
-function addMarkerByShow(show,placeMarkers){
+function addMarkerByShow(show, placeMarkers) {
     for (var t = 0; t < show.length; t++) {
-        if (!(isOverlap(show[t].lttd, placeMarkers,show[t].type))) {//중복체크후 마커 추가
+        if (!(isOverlap(show[t].lttd, placeMarkers, show[t].type))) {//중복체크후 마커 추가
             addMarkerToArray(show[t], placeMarkers);
         }
         else {
@@ -259,7 +302,7 @@ function clickedShow(show, i, placeMarkers) {
     let avgStarD = document.createElement('p');
     let dabomD = document.createElement('button');
     let getDiret = document.createElement('button');
-    
+
     //dom 내용 추가
     titleD.innerHTML = "제목<br>" + selShow.title;
     whenD.innerHTML = "상영기간<br>" + selShow.op_st_dt + '~' + selShow.op_ed_dt;
@@ -281,7 +324,7 @@ function clickedShow(show, i, placeMarkers) {
     avgStarD.innerHTML = "평점<br>" + selShow.avg_star;
     dabomD.textContent = "예매하러가기 ";
     dabomD.onclick = function () { window.open(selShow.dabom_url); }
-    
+
     //dom 추가ㅣ
     detailDiv.appendChild(titleD);
     detailDiv.appendChild(whenD);
@@ -325,7 +368,7 @@ function initialize() {
     var classicChecked = document.getElementById("classic");
     var concertChecked = document.getElementById("concert");
     var danceChecked = document.getElementById("dance");
-    
+
     //체크박스 체크(초기값 지정)
     musicalChecked.checked = true;
     operaChecked.checked = true;
@@ -336,7 +379,7 @@ function initialize() {
     concertChecked.checked = true;
     danceChecked.checked = true;
 
-    var show = []
+
     //장소대입
     for (let x = 0; x < infosKey.length - 2; x++) {
         for (let y = 0; y < infos[infosKey[x]].length; y++) {
@@ -355,12 +398,14 @@ function initialize() {
 
             }
             if (infos[infosKey[x]][y].hasLoc == false) {//공연장 api에 없는 경우-공연장에 추가
+                //장소없는 데이터 카운터+1
+                noPlaceCnt++;
                 // 장소 검색 객체를 생성합니다
                 var ps = new kakao.maps.services.Places();
                 // 정제한 키워드로 장소를 검색합니다
                 var searchedKeyword = keywordFilter(infos[infosKey[x]][y].place_nm);
                 //예외사항
-                if(infos[infosKey[x]][y].place_nm == "PANACA B"){
+                if (infos[infosKey[x]][y].place_nm == "PANACA B") {
                     searchedKeyword = "파나카 B"
                 }
                 ps.keywordSearch("부산 " + searchedKeyword, placesSearchCB);
@@ -370,6 +415,8 @@ function initialize() {
                         if (data.length >= 2) {//결과가 2개이상이면 두번째도 저장
                             resultDatas.push(data[1]);
                         }
+                        //검색횟수 + 1
+                        searchCnt++;
                     }
                     else {
                         console.log("no Result of " + searchedKeyword);
@@ -378,7 +425,15 @@ function initialize() {
             }
         }
     }
-    setTimeout(() => {
+
+
+    afterSearched();
+
+}
+function afterSearched() {
+    var show = []
+    //검색이 끝나면 실행(비동기)
+    if (noPlaceCnt == searchCnt) {
         //console.log(resultDatas);
         //검색결과를 토대로 재기입
         for (let x = 0; x < infosKey.length - 2; x++) {
@@ -435,7 +490,7 @@ function initialize() {
         addMarkerToMap(placeMarkers);
         //console.log(placeMarkers);
         var loadingScreen = document.querySelector('.loading');
-            
+        curShows = show;
         clusterer.redraw();
 
         addMarkerToMap(placeMarkers);
@@ -445,8 +500,16 @@ function initialize() {
         drawInform(show);
         //console.log(infos);
         loadingScreen.style.display = 'none';
-        console.log("loaded All")////////////////////////////////////////////////////////코드 실행 최종단
-    }, 6000)
+        console.log("initialize done");////////////////////////////////////////////////////////코드 실행 최종단
+    }
+    //검색이 끝나지않은경우 끝날때까지 afterSearched 실행, 0.5s 텀
+    else {
+        console.log("waiting for place data")
+        setTimeout(() => {
+            afterSearched();
+        }, 500)
+    }
+
 }
 //왼쪽 패널 선택된 상영 종류에따라 마커 출력/infos 내용에 공연별 공연장 위치 저장까지//초기에 1회실행되야함
 function checkBoxClicked() {
@@ -458,59 +521,70 @@ function checkBoxClicked() {
     var classicChecked = document.getElementById("classic").checked;
     var concertChecked = document.getElementById("concert").checked;
     var danceChecked = document.getElementById("dance").checked;
+    var playingChecked = document.getElementById("playing").checked;
     var show = []
-
+    var dateInput = document.getElementById("datepicker");
+    dateInput.value=null;
     //console.log(musicalChecked + ", " + operaChecked + ", " + playChecked)
     //console.log(infos);
     if (musicalChecked) {
         for (var i = 0; i < infos.musical.length; i++) {
             show.push(infos.musical[i]);
-            console.log("load musicala Done")
+            //console.log("load musicala Done")
         }
     }
     if (operaChecked) {
         for (var j = 0; j < infos.opera.length; j++) {
             show.push(infos.opera[j]);
-            console.log("load opera Done")
+            //console.log("load opera Done")
         }
     }
     if (playChecked) {
         for (var k = 0; k < infos.play.length; k++) {
             show.push(infos.play[k]);
-            console.log("load play Done")
+            //console.log("load play Done")
         }
     }
-    if (tradChecked){
+    if (tradChecked) {
         for (var l = 0; l < infos.trad.length; l++) {
             show.push(infos.trad[l]);
-            console.log("load tradition Done")
+            //console.log("load tradition Done")
         }
     }
-    if (exhiChecked){
+    if (exhiChecked) {
         for (var m = 0; m < infos.exhi.length; m++) {
             show.push(infos.exhi[m]);
-            console.log("load exhibition Done")
+            //console.log("load exhibition Done")
         }
     }
-    if (classicChecked){
+    if (classicChecked) {
         for (var n = 0; n < infos.classic.length; n++) {
             show.push(infos.classic[n]);
-            console.log("load classic Done")
+            // console.log("load classic Done")
         }
     }
-    if (concertChecked){
+    if (concertChecked) {
         for (var o = 0; o < infos.concert.length; o++) {
             show.push(infos.concert[o]);
-            console.log("load concert Done")
+            //console.log("load concert Done")
         }
     }
-    if (danceChecked){
+    if (danceChecked) {
         for (var p = 0; p < infos.dance.length; p++) {
             show.push(infos.dance[p]);
-            console.log("load dance Done")
+            //console.log("load dance Done")
         }
     }
+    var playingShow = []
     show = sortByEnd(show);
+    if (playingChecked) {
+        for (var ii = 0; ii < show.length; ii++) {
+            if (show[ii].op_st_dt <= today) {
+                playingShow.push(show[ii])
+            }
+        }
+        show = playingShow;
+    }
     placeMarkers = []; //마커 배열 초기화
     placeMarkers = addMarkerByShow(show, placeMarkers);
     clusterer.clear();
@@ -520,7 +594,134 @@ function checkBoxClicked() {
     drawInform(show);
 
 }
+function allCheck() {
+    //장르별 체크박스 가져오기
+    var musicalChecked = document.getElementById("musical");
+    var operaChecked = document.getElementById("opera");
+    var playChecked = document.getElementById("play");
+    var tradChecked = document.getElementById("trad");
+    var exhiChecked = document.getElementById("exhi");
+    var classicChecked = document.getElementById("classic");
+    var concertChecked = document.getElementById("concert");
+    var danceChecked = document.getElementById("dance");
+
+    //체크박스 체크(초기값 지정)
+    musicalChecked.checked = true;
+    operaChecked.checked = true;
+    playChecked.checked = true;
+    tradChecked.checked = true;
+    exhiChecked.checked = true;
+    classicChecked.checked = true;
+    concertChecked.checked = true;
+    danceChecked.checked = true;
+    checkBoxClicked();
+}
+function allUncheck() {
+    //장르별 체크박스 가져오기
+    var musicalChecked = document.getElementById("musical");
+    var operaChecked = document.getElementById("opera");
+    var playChecked = document.getElementById("play");
+    var tradChecked = document.getElementById("trad");
+    var exhiChecked = document.getElementById("exhi");
+    var classicChecked = document.getElementById("classic");
+    var concertChecked = document.getElementById("concert");
+    var danceChecked = document.getElementById("dance");
+
+    //체크박스 체크(초기값 지정)
+    musicalChecked.checked = false;
+    operaChecked.checked = false;
+    playChecked.checked = false;
+    tradChecked.checked = false;
+    exhiChecked.checked = false;
+    classicChecked.checked = false;
+    concertChecked.checked = false;
+    danceChecked.checked = false;
+    checkBoxClicked();
+}
 //상영물 배열을 받고 라디오버튼을 그리는 버튼
+function dateComfirmed() {
+
+    var playingChecked = document.getElementById("playing");
+    var musicalChecked = document.getElementById("musical").checked;
+    var operaChecked = document.getElementById("opera").checked;
+    var playChecked = document.getElementById("play").checked;
+    var tradChecked = document.getElementById("trad").checked;
+    var exhiChecked = document.getElementById("exhi").checked;
+    var classicChecked = document.getElementById("classic").checked;
+    var concertChecked = document.getElementById("concert").checked;
+    var danceChecked = document.getElementById("dance").checked;
+    //체크박스 체크(초기값 지정)
+
+    var temp = []
+
+    var selDate = $('#datepicker').val();
+
+    if (selDate != "") {
+        selDate = new Date(selDate);
+        selDate = selDate.toISOString();
+        console.log(selDate);
+        if (selDate < today) {
+            alert("유효하지않은 날짜입니다")
+        }
+        else {
+            playingChecked.checked = false;
+
+            for (var i = 0; i < curShows.length; i++) {
+                if (curShows[i].op_st_dt <= selDate && curShows[i].op_ed_dt >= selDate) {
+                    if (musicalChecked) {
+                        if (curShows[i].type == "musical") {
+                            temp.push(curShows[i])
+                        }
+                    }
+                    if (operaChecked) {
+                        if (curShows[i].type == "opera") {
+                            temp.push(curShows[i])
+                        }
+                    }
+                    if (playChecked) {
+                        if (curShows[i].type == "muplaysical") {
+                            temp.push(curShows[i])
+                        }
+                    }
+                    if (tradChecked) {
+                        if (curShows[i].type == "trad") {
+                            temp.push(curShows[i])
+                        }
+                    }
+                    if (exhiChecked) {
+                        if (curShows[i].type == "exhi") {
+                            temp.push(curShows[i])
+                        }
+                    }
+                    if (classicChecked) {
+                        if (curShows[i].type == "classic") {
+                            temp.push(curShows[i])
+                        }
+                    }
+                    if (concertChecked) {
+                        if (curShows[i].type == "concert") {
+                            temp.push(curShows[i])
+                        }
+                    }
+                    if (danceChecked) {
+                        if (curShows[i].type == "dance") {
+                            temp.push(curShows[i])
+                        }
+                    }
+                }
+            }
+            drawInform(temp);
+            placeMarkers = []; //마커 배열 초기화
+            placeMarkers = addMarkerByShow(temp, placeMarkers);
+            clusterer.clear();
+            addMarkerToMap(placeMarkers);
+            //console.log(placeMarkers);
+            clusterer.redraw();
+        }
+    } else {
+        alert("날짜를 입력해주세요")
+    }
+}
 function drawInform(show) {
     //버튼 그리기
     var topDiv = document.querySelector(".top");
@@ -530,7 +731,7 @@ function drawInform(show) {
     for (let i = 0; i < show.length; i++) {
         let labelTopDiv = document.createElement('div')
         labelTopDiv.className = "labelTop";
-        
+
         //버튼 정보
         let radioBtn = document.createElement('input');
         radioBtn.name = "showInfos"
@@ -548,10 +749,10 @@ function drawInform(show) {
         }
         var length = 15//...포함 15자
         var shortTitle = show[i].title
-        if(shortTitle.length > length){
-            shortTitle = shortTitle.substr(0,length-2)+"..."
+        if (shortTitle.length > length) {
+            shortTitle = shortTitle.substr(0, length - 2) + "..."
         }
-        outBox.innerHTML = '<span class="inner">' + shortTitle + "</span>"
+        outBox.innerHTML = '<p class="inner">' + shortTitle + "</p>"
 
         //d내용 추가//type에따라 테두리색 변경
         if (show[i].type == "musical") {
@@ -579,8 +780,8 @@ function drawInform(show) {
             outOfOutBox.style.background = "#191919";
         }
         outBox.innerHTML +=
-            '<span class="inner">' + show[i].op_st_dt + '~' + show[i].op_ed_dt + "</span>"
-            + '<span class="inner">' + show[i].place_nm + "</span>";
+            '<p class="inner">' + show[i].op_st_dt + '~' + show[i].op_ed_dt + "</p>"
+            + '<p class="inner">' + show[i].place_nm + "</p>";
 
         //dom 추가
         topDiv.appendChild(labelTopDiv);
@@ -592,17 +793,30 @@ function drawInform(show) {
 }
 /////////////////////////////////////////////////////////메인함수///////////////////////////////////////////////////////////////////////
 function main() {
+    //모든데이터 로드 완료시 실행
+    if (musicalLoaded && operaLoaded && playLoaded && tradLoaded && exhiLoaded && classicLoaded && concertLoaded && danceLoaded && placeLoaded && exPlaceLoaded && themeLoaded) {
+        console.log("sorting");
         //상영 종류별 데이터 정렬 0~2 상영종류, 3 장소, 4 테마
-        setTimeout(()=>{
-            for (var i = 0; i < infosKey.length - 2; i++) {
-                infos[infosKey[i]] = sortByEnd(infos[infosKey[i]]);
-            }
-            console.log(infos)
-             //초기화
+        for (var i = 0; i < infosKey.length - 2; i++) {
+            infos[infosKey[i]] = sortByEnd(infos[infosKey[i]]);
+        }
+        //console.log(infos)
+        //console.log(resultDatas)
+        //console.log(placesInformation)
+        //초기화
+        console.log("initializing");
         initialize();
+
         clusterer.redraw();
         //console.log(infos);
-        }, 3000)
+    }
+    //안됐으면 다시 main()호출하면서 ture될때까지 실행, 0.5s 텀
+    else {
+        console.log("waiting for data")
+        setTimeout(() => {
+            main();
+        }, 500)
+    }
 }
 /////////////////////////////////////////////////////////메인함수 끝///////////////////////////////////////////////////////////////////////
 //--------------------------------------------함수 선언 끝--------------------------------------------------------------
@@ -624,6 +838,8 @@ fetch(initThemeUrl)
                     themeInformation[i].type = "theme";
                 }
                 infos.theme = themeInformation;
+                console.log("theme done");
+                themeLoaded = true;
             });
 
     });
@@ -646,30 +862,34 @@ fetch(initPlaceUrl)//공연장 초기값
                     placesInformation.push(place[i]);// 공연장 데이터를 총 공연장갯수만큼 삽입
                     placesInformation[i].type = "place";
                 }
+                placeLoaded = true;
             });
+
     });
-    
+
 //전시공간 정보 추출
 fetch(initExPlaceUrl)//공연장 초기값
-.then((res) => res.json())
-.then((resJson) => {
-    //총 공연장 개수 파라미터
-    var numOfRowsPlace = resJson.getBusanCultureExhibitPlace.totalCount;
-    //총 공연장 갯수만큼 불러오는 url
-    var exPlaceUrl = proxy + exPlaceApiLink + appKey + commonApiLink + numOfRowsPlace + type;
-    fetch(exPlaceUrl)//전체 공연장
-        .then((res) => res.json())
-        .then((resJson) => {
-            //테스트 문구-done
-            //dataPane_t.innerText = JSON.stringify(resJson,null,1);
-            var exPlace = resJson.getBusanCultureExhibitPlace.item;
-            for (let i = 0; i < numOfRowsPlace; i++) {
-                placesInformation.push(exPlace[i]);// 공연장 데이터를 총 공연장갯수만큼 삽입
-                placesInformation[i].type = "place";
-            }
-            infos.place = placesInformation;
-        });
-});
+    .then((res) => res.json())
+    .then((resJson) => {
+        //총 공연장 개수 파라미터
+        var numOfRowsPlace = resJson.getBusanCultureExhibitPlace.totalCount;
+        //총 공연장 갯수만큼 불러오는 url
+        var exPlaceUrl = proxy + exPlaceApiLink + appKey + commonApiLink + numOfRowsPlace + type;
+        fetch(exPlaceUrl)//전체 공연장
+            .then((res) => res.json())
+            .then((resJson) => {
+                //테스트 문구-done
+                //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+                var exPlace = resJson.getBusanCultureExhibitPlace.item;
+                for (let i = 0; i < numOfRowsPlace; i++) {
+                    placesInformation.push(exPlace[i]);// 공연장 데이터를 총 공연장갯수만큼 삽입
+                    placesInformation[i].type = "place";
+                }
+                infos.place = placesInformation;
+                console.log("place done");
+                exPlaceLoaded = true;
+            });
+    });
 //오페라 정보 fetch
 fetch(initOperaUrl)//오페라 초기값
     .then((res) => res.json())
@@ -696,6 +916,8 @@ fetch(initOperaUrl)//오페라 초기값
                     }
                 }
                 infos.opera = operaInformation;
+                console.log("opera done");
+                operaLoaded = true;
             });
     });
 
@@ -725,6 +947,8 @@ fetch(initPlayUrl)//연극 초기값
                     }
                 }
                 infos.play = playInformation;
+                console.log("play done");
+                playLoaded = true;
             });
     });
 //전통예술 fetch
@@ -753,127 +977,136 @@ fetch(initTradUrl)// 초기값
                     }
                 }
                 infos.trad = tradInformation;
+                console.log("tradition done");
+                tradLoaded = true;
             });
     });
 
 //전시 fetch
 fetch(initExhiUrl)// 초기값
-.then((res) => res.json())
-.then((resJson) => {
-    //총 개수 파라미터
-    var numOfRows = resJson.getBusanCultureExhibitDetail.totalCount;
-    //총 개수 만큼 불러오는 url
-    var exhiUrl = proxy + exhiApiLink + appKey + commonApiLink + numOfRows + type;
-    fetch(exhiUrl)//전체 연극
-        .then((res) => res.json())
-        .then((resJson) => {
-            //테스트 문구-done
-            //dataPane_t.innerText = JSON.stringify(resJson,null,1);
-            //목록을 저장할 배열
-            var j = 0;
-            var exhiInformation = [];
-            var exhi = resJson.getBusanCultureExhibitDetail.item;
-            for (var i = 0; i < numOfRows; i++) {
-                //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
-                if (exhi[i].op_ed_dt >= today) {
-                    exhiInformation.push(exhi[i]);
-                    exhiInformation[j].type = "exhi";
-                    j++;
+    .then((res) => res.json())
+    .then((resJson) => {
+        //총 개수 파라미터
+        var numOfRows = resJson.getBusanCultureExhibitDetail.totalCount;
+        //총 개수 만큼 불러오는 url
+        var exhiUrl = proxy + exhiApiLink + appKey + commonApiLink + numOfRows + type;
+        fetch(exhiUrl)//전체 연극
+            .then((res) => res.json())
+            .then((resJson) => {
+                //테스트 문구-done
+                //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+                //목록을 저장할 배열
+                var j = 0;
+                var exhiInformation = [];
+                var exhi = resJson.getBusanCultureExhibitDetail.item;
+                for (var i = 0; i < numOfRows; i++) {
+                    //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
+                    if (exhi[i].op_ed_dt >= today) {
+                        exhiInformation.push(exhi[i]);
+                        exhiInformation[j].type = "exhi";
+                        j++;
+                    }
                 }
-            }
-            infos.exhi = exhiInformation;
-        });
-});
+                infos.exhi = exhiInformation;
+                console.log("exhibition done");
+                exhiLoaded = true;
+            });
+    });
 
 //클래식 fetch
 fetch(initClassicUrl)// 초기값
-.then((res) => res.json())
-.then((resJson) => {
-    //총 개수 파라미터
-    var numOfRows = resJson.getBusanCultureClassicDetail.totalCount;
-    //총 개수 만큼 불러오는 url
-    var classicUrl = proxy + classicApiLink + appKey + commonApiLink + numOfRows + type;
-    fetch(classicUrl)//전체 연극
-        .then((res) => res.json())
-        .then((resJson) => {
-            //테스트 문구-done
-            //dataPane_t.innerText = JSON.stringify(resJson,null,1);
-            //목록을 저장할 배열
-            var j = 0;
-            var classicInformation = [];
-            var classic = resJson.getBusanCultureClassicDetail.item;
-            for (var i = 0; i < numOfRows; i++) {
-                //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
-                if (classic[i].op_ed_dt >= today) {
-                    classicInformation.push(classic[i]);
-                    classicInformation[j].type = "classic";
-                    j++;
+    .then((res) => res.json())
+    .then((resJson) => {
+        //총 개수 파라미터
+        var numOfRows = resJson.getBusanCultureClassicDetail.totalCount;
+        //총 개수 만큼 불러오는 url
+        var classicUrl = proxy + classicApiLink + appKey + commonApiLink + numOfRows + type;
+        fetch(classicUrl)//전체 연극
+            .then((res) => res.json())
+            .then((resJson) => {
+                //테스트 문구-done
+                //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+                //목록을 저장할 배열
+                var j = 0;
+                var classicInformation = [];
+                var classic = resJson.getBusanCultureClassicDetail.item;
+                for (var i = 0; i < numOfRows; i++) {
+                    //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
+                    if (classic[i].op_ed_dt >= today) {
+                        classicInformation.push(classic[i]);
+                        classicInformation[j].type = "classic";
+                        j++;
+                    }
                 }
-            }
-            infos.classic = classicInformation;
-        });
-});
+                infos.classic = classicInformation;
+                console.log("classic done");
+                classicLoaded = true;
+            });
+    });
 
 //콘서트fetch
 fetch(initConcertUrl)// 초기값
-.then((res) => res.json())
-.then((resJson) => {
-    //총 개수 파라미터
-    var numOfRows = resJson.getBusanCultureConcertDetail.totalCount;
-    //총 개수 만큼 불러오는 url
-    var concertUrl = proxy + concertApiLink + appKey + commonApiLink + numOfRows + type;
-    fetch(concertUrl)//전체 연극
-        .then((res) => res.json())
-        .then((resJson) => {
-            //테스트 문구-done
-            //dataPane_t.innerText = JSON.stringify(resJson,null,1);
-            //목록을 저장할 배열
-            var j = 0;
-            var concertInformation = [];
-            var concert = resJson.getBusanCultureConcertDetail.item;
-            for (var i = 0; i < numOfRows; i++) {
-                //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
-                if (concert[i].op_ed_dt >= today) {
-                    concertInformation.push(concert[i]);
-                    concertInformation[j].type = "concert";
-                    j++;
+    .then((res) => res.json())
+    .then((resJson) => {
+        //총 개수 파라미터
+        var numOfRows = resJson.getBusanCultureConcertDetail.totalCount;
+        //총 개수 만큼 불러오는 url
+        var concertUrl = proxy + concertApiLink + appKey + commonApiLink + numOfRows + type;
+        fetch(concertUrl)//전체 연극
+            .then((res) => res.json())
+            .then((resJson) => {
+                //테스트 문구-done
+                //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+                //목록을 저장할 배열
+                var j = 0;
+                var concertInformation = [];
+                var concert = resJson.getBusanCultureConcertDetail.item;
+                for (var i = 0; i < numOfRows; i++) {
+                    //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
+                    if (concert[i].op_ed_dt >= today) {
+                        concertInformation.push(concert[i]);
+                        concertInformation[j].type = "concert";
+                        j++;
+                    }
                 }
-            }
-            infos.concert = concertInformation;
-        });
-});
+                infos.concert = concertInformation;
+                console.log("concert done");
+                concertLoaded = true;
+            });
+    });
 
 //무용 fetch
 fetch(initDanceUrl)// 초기값
-.then((res) => res.json())
-.then((resJson) => {
-    //총 개수 파라미터
-    var numOfRows = resJson.getBusanCultureDanceDetail.totalCount;
-    //총 개수 만큼 불러오는 url
-    var danceUrl = proxy + danceApiLink + appKey + commonApiLink + numOfRows + type;
-    fetch(danceUrl)//전체 연극
-        .then((res) => res.json())
-        .then((resJson) => {
-            //테스트 문구-done
-            //dataPane_t.innerText = JSON.stringify(resJson,null,1);
-            //목록을 저장할 배열
-            var j = 0;
-            var danceInformation = [];
-            var dance = resJson.getBusanCultureDanceDetail.item;
-            for (var i = 0; i < numOfRows; i++) {
-                //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
-                if (dance[i].op_ed_dt >= today) {
-                    danceInformation.push(dance[i]);
-                    danceInformation[j].type = "dance";
-                    j++;
+    .then((res) => res.json())
+    .then((resJson) => {
+        //총 개수 파라미터
+        var numOfRows = resJson.getBusanCultureDanceDetail.totalCount;
+        //총 개수 만큼 불러오는 url
+        var danceUrl = proxy + danceApiLink + appKey + commonApiLink + numOfRows + type;
+        fetch(danceUrl)//전체 연극
+            .then((res) => res.json())
+            .then((resJson) => {
+                //테스트 문구-done
+                //dataPane_t.innerText = JSON.stringify(resJson,null,1);
+                //목록을 저장할 배열
+                var j = 0;
+                var danceInformation = [];
+                var dance = resJson.getBusanCultureDanceDetail.item;
+                for (var i = 0; i < numOfRows; i++) {
+                    //현시점과 비교하여 종료일이 현시점보다 크거나() 같은경우만 push
+                    if (dance[i].op_ed_dt >= today) {
+                        danceInformation.push(dance[i]);
+                        danceInformation[j].type = "dance";
+                        j++;
+                    }
                 }
-            }
-            infos.dance = danceInformation;
-        });
-});
+                infos.dance = danceInformation;
+                console.log("dance done");
+                danceLoaded = true;
+            });
+    });
 
-
-//뮤지컬 정보추출및 전반적인 동작코드
+//뮤지컬 정보추출
 fetch(initMusicalUrl)//뮤지컬 초기 값
     .then((res) => res.json())
     .then((resJson) => {
@@ -900,7 +1133,10 @@ fetch(initMusicalUrl)//뮤지컬 초기 값
                     }
                 }
                 infos.musical = musicalInformation;
-                //동작시킬 메인함수 호출
-                main();
+                console.log("musical done");
+                musicalLoaded = true;
+
             });
     });
+                    //동작시킬 메인함수 호출
+                    main();

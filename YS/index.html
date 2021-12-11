@@ -10,6 +10,11 @@
     <link rel="stylesheet" href="./css/loading.css" type="text/css">
     <link rel="stylesheet" href="./css/slideMenu.css" type="text/css">
     <link rel="stylesheet" href="./css/checkbox.css" type="text/css">
+    <link rel="stylesheet" href="./css/darkCheckbox.css" type="text/css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
 </head>
 
@@ -36,7 +41,13 @@
     <script type="text/javascript"
         src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=2d840eb6653eca8815b6f489024e0ee2&libraries=services,clusterer"></script>
 
-    <header class="header">부산 공연 정보</header>
+    <header class="header">
+    <div style="display: inline-block;">
+        <div class="center" style="margin-left: 60px;">부산 공연 정보</div>
+    </div>
+        <div class="center" style="float: right;"><input type="checkbox"></div>
+    
+    </header>
 
     <nav class="nav">
         <div>
@@ -45,7 +56,7 @@
                         선택하기</span></button>
                 <div class="menu">
                     <br>
-                    <br>현재 뮤지컬 오페라 연극만 구현됨
+                    <br>
                     <div class="typeCheckBox">
                         <div>
                             <label>
@@ -95,6 +106,10 @@
                                 <span>무용</span>
                             </label>
                         </div>
+                        <div class="asd">
+                            <button class="underline-btn" onclick="allCheck()">모두체크</button>
+                            <button class="underline-btn" onclick="allUncheck()">모두해제</button>
+                        </div>
                     </div>
                 </div>
 
@@ -103,7 +118,7 @@
         <div style=" display: inline-block ; height: 50px; text-align: center; position: relative; "><br>
             <div>
                 <span>
-                    기능(구현예정)
+                    Functions
                 </span>
             </div>
         </div>
@@ -111,16 +126,25 @@
         <div class="functionMenu">
             <div>
                 <label>
-                    <input type="checkbox" id="usrTown">
-                    <span>sample</span>
+                    <input type="checkbox" onclick="checkBoxClicked()" id="playing">
+                    <span>상영중 <br> 보기</span>
                 </label>
             </div>
         </div>
 
-
-
-
-
+        
+        <div style=" display: inline-block ; height: 50px; text-align: center; position: relative; ">
+            <p><span>날짜선택</span></p>
+        </div>
+        <div style=" display: inline-block ; height: 50px; text-align: center; position: relative; width: 100%; ">
+            <input type="text" id="datepicker" placeholder="날짜넣기" style="width: 50%;">
+            <script>
+                $(function () {
+                    $("#datepicker").datepicker();
+                });
+            </script>
+            <button onclick="dateComfirmed()">확인</button>
+        </div>
 
         <!--슬라이드메뉴 이벤트 리스너-->
         <script type="text/javascript" src="./js/slideMenu.js"></script>
@@ -142,7 +166,6 @@
             </div>
             <div>
             </div>
-
     </aside>
 
     <section class="sectionMap">
@@ -152,10 +175,11 @@
 
     <footer class="footer">하단 크레딧</footer>
     <div class="empty"></div>
-    <!--지도 가져오기-->
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
+    <!--스크립트 가져오기-->
+
     <script type="text/javascript" src="./js/mapApi.js"></script>
     <script type="text/javascript" src="./js/show.js"></script>
+    <script type="text/javascript" src="./js/darkTheme.js"></script>
 </body>
 
 </html>

@@ -10,7 +10,6 @@
     height: 102%;
     overflow-y: scroll;
 }
-
 .labels input[type="radio"]:checked,
 .labels input[type="radio"]:not(:checked)
 {
@@ -31,7 +30,6 @@
     transition: .3s ease-in-out;
     color: white;
 }
-
 .labelTop{
     display: inline-block;
     margin: 5%;
@@ -86,20 +84,11 @@
 .inner{
     font-weight: 700;
     font-family: 'Nanum Gothic', sans-serif;
-    padding: 5%;
-    display: inline-block;
     position: relative;
     z-index: 2;
 }
-
 .labels{
     width: 0px;
     height: 1px;
 
 }
-
-/**/
-
-
-
-

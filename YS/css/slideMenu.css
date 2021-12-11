@@ -34,7 +34,6 @@
     transition: .3s ease-in-out;
     color: white;
 }
-
 .menu_button i {
     font-size: 15px;
     color: #113a6b;
@@ -53,7 +52,6 @@
 .menu_title.on {
     color:  white;
 }
-
 .menu {
     position: fixed;
     top: 0;

@@ -1,3 +1,4 @@
+
 .typeCheckBox>div{
     width: 99%;
     margin: 2px;
@@ -363,7 +364,7 @@
 
 }
 .functionMenu>div>label>span:before{
-    content: '';
+    content: '';    
     position: absolute;
     top: 0;
     left: 0;
@@ -381,3 +382,50 @@
     background: #113a6b;
     color: white;
 }
+
+.underline-btn {
+    margin-left: 5%;
+    margin-right: 5%;
+    display: inline-block;
+    padding: 1em 0;
+    border-radius: 0;
+    color: #113a6b;
+    margin-top: 2rem;
+    font-weight: bold;
+    font-size:15px;
+    background: rgba(0, 0, 0, 0);
+    border: none;
+    text-transform: uppercase;
+    text-decoration: none;
+    position: relative;
+  }
+  .underline-btn:before, .underline-btn:after {
+    content: "";
+    display: block;
+    position: absolute;
+    height: 1px;
+    width: 0;
+  }
+  .underline-btn:before {
+    transition: width 0s ease, background 0.4s ease;
+    left: 0;
+    right: 0;
+    bottom: 6px;
+  }
+  .underline-btn:after {
+    right: 2.2%;
+    bottom: 6px;
+    background: #113a6b;
+    transition: width 0.4s ease;
+  }
+  .underline-btn:hover:before {
+    width: 97.8%;
+    background: #113a6b;
+    transition: width 0.4s ease;
+  }
+  .underline-btn:hover:after {
+    width: 97.8%;
+    background: 0 0;
+    transition: all 0s ease;
+  }
+  

@@ -17,6 +17,7 @@ body {
     background: #113a6b;
     color: white;
     text-align: center;
+    overflow: hidden;
 }
 .nav{
 
@@ -51,8 +52,6 @@ body {
     display: inline-block;
     color: white;
 }
-
-
 .theater_data::-webkit-scrollbar {
     width: 15px;
   }
