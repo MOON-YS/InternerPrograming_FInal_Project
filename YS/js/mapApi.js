@@ -12,6 +12,7 @@ const exhiMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/skyblue.png'
 const classicMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/light_green.png'
 const concertMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/yellow.png'
 const danceMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/black.png'
+const parkMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/parkMarker.png'
 
 //뮤지컬 마커
 var musicalMarkerImage = new kakao.maps.MarkerImage(
@@ -45,6 +46,10 @@ var concertMarkerImage = new kakao.maps.MarkerImage(
 var danceMarkerImage = new kakao.maps.MarkerImage(
 	danceMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+var parkMarkerImage = new kakao.maps.MarkerImage(
+	parkMarkerUrl,
+		new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+		
 //중복 마커
 var overMarkerImage = new kakao.maps.MarkerImage(
 overMarkerUrl,
@@ -66,7 +71,17 @@ let mapContainer = document.getElementById('map'), // 지도를 표시할 div
 	};
 // 지도를 생성한다 
 var map = new kakao.maps.Map(mapContainer, mapOption);
+// 지도 타입 변경 컨트롤을 생성한다
+var mapTypeControl = new kakao.maps.MapTypeControl();
 
+// 지도의 상단 우측에 지도 타입 변경 컨트롤을 추가한다
+map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPLEFT);	
+
+// 지도에 확대 축소 컨트롤을 생성한다
+var zoomControl = new kakao.maps.ZoomControl();
+
+// 지도의 우측에 확대 축소 컨트롤을 추가한다
+map.addControl(zoomControl, kakao.maps.ControlPosition.LEFT);
 function setCenter(lt, ln) {//해당위치를 맵의 센터로
 	var moveLatLon = new kakao.maps.LatLng(lt, ln)
 	map.setCenter(moveLatLon);
@@ -164,14 +179,17 @@ function isOverlap(lat, markerArray, type) {
 		else if(markerUrl == danceMarkerUrl){
 			curType = "dance"
 		}
+		else if(markerUrl == parkMarkerUrl){
+			curType = "주차장"
+		}
 		var posLat = pos.getLat();
 		//var posLng = pos.getLng();
-		if (lat > posLat) {//오차범위  +=0.00001
-			if (lat - posLat < 0.00001) {
+		if (lat > posLat) {
+			if (lat - posLat < 0.00001) {//오차범위  +=0.00001
 				isOverlap = true;
-				if(curType != type){//생성할 마커와 이미 존재하는 마커가 다른 상영물일때
-				markerArray[i].setImage(overMarkerImage);
-			}
+				if (curType != type && type !="주차장") {//생성할 마커와 이미 존재하는 마커가 다른 상영물일때
+					markerArray[i].setImage(overMarkerImage);
+				}
 				break;
 			}
 			else {
@@ -182,7 +200,7 @@ function isOverlap(lat, markerArray, type) {
 		else {
 			if (posLat - lat < 0.00001) {
 				isOverlap = true;
-				if(curType != type){//생성할 마커와 이미 존재하는 마커가 다른 상영물일때
+				if(curType != type && type !="주차장"){//생성할 마커와 이미 존재하는 마커가 다른 상영물일때
 					markerArray[i].setImage(overMarkerImage);
 				}
 				break;
@@ -231,3 +249,31 @@ function upScaleMarker(marker){
 	marker.setImage(newMarkerImg);
 	return marker;
 }
+//공연정보를 받고 인근 공영주차장(1km내) 마커 출력
+function addClosePark(selShow, park, placeMarker){
+	var selY = selShow.lttd;
+	var selX = selShow.lngt;
+	for(var i = 0; i<park.length;i++){
+		if(getDistanceFromLatLonInKm(selY,selX,park[i].y,park[i].x)<1){
+			var Marker = new kakao.maps.Marker({
+				position: new kakao.maps.LatLng(park[i].y, park[i].x)
+			});
+			Marker.setImage(parkMarkerImage);
+			if(!isOverlap(park[i].y, placeMarker, "주차장")){
+				placeMarker.push(Marker);
+			}
+			
+		}
+	}
+}
+//두좌표를 km으로 반환
+function getDistanceFromLatLonInKm(lat1, lng1, lat2, lng2) 
+{ function deg2rad(deg) { return deg * (Math.PI / 180) } var R = 6371; // Radius of the earth in km 
+var dLat = deg2rad(lat2-lat1); // deg2rad below 
+var dLon = deg2rad(lng2-lng1); 
+var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+var d = R * c; // Distance in km 
+return d; 
+}
+

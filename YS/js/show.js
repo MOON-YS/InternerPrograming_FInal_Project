@@ -23,6 +23,8 @@ const placeApiLink = 'http://apis.data.go.kr/6260000/BusanCulturePerformPlaceSer
 const exPlaceApiLink = 'http://apis.data.go.kr/6260000/BusanCultureExhibitPlaceService/getBusanCultureExhibitPlace?serviceKey=';
 //테마 정보 url
 const themeApiLink = 'http://apis.data.go.kr/6260000/BusanCultureThemeCodeService/getBusanCultureThemeCode?serviceKey=';
+//공영주차장
+const parking = "http://apis.data.go.kr/6260000/BusanPblcPrkngInfoService/getPblcPrkngInfo?serviceKey="
 //공용링크
 const commonApiLink = '&pageNo=1&numOfRows=';
 
@@ -54,9 +56,11 @@ const initPlaceUrl = proxy + placeApiLink + appKey + commonApiLink + 1 + type;
 const initExPlaceUrl = proxy + exPlaceApiLink + appKey + commonApiLink + 1 + type;
 //초기 테마정보 url 생성
 const initThemeUrl = proxy + themeApiLink + appKey + commonApiLink + 1 + type;
+//초기  주차장정보 url 생성
+const initParking = proxy + parking + appKey + commonApiLink + 1 + type;
 
 //현재날짜를 ISOSTring으로 반환(YYYY-MM-DDTtime:min:sec)-json 날짜와 비교가능
-const today = new Date().toISOString();
+const today = new Date().toISOString().split("T")[0];
 //각데이터별 fetch 완료 토큰
 var musicalLoaded = false;
 var operaLoaded = false;
@@ -76,51 +80,68 @@ var noPlaceCnt = 0;
 //주소 검색 결과를 저장할 배열
 let resultDatas = [];
 //infos 키값
-var infosKey = ["musical", "opera", "play", "trad", "exhi", "classic", "concert", "place", "theme"];
+var infosKey = ["musical", "opera", "play", "trad", "exhi", "classic", "concert","dance", "place", "theme"];
 //뮤지컬+오페라+연극
 var infos = []
 //공연장 목록을 저장할 배열
 var placesInformation = [];
-//
+//이미지 로드 카운터
+var imgCnt=0;
+var showNum=0;
+//상영중 공연
 var curShows = [];
+var parkingArr = [];
+var parkingResult = [""];
+var maxParkSearchCnt = 0;
+var parkSearchCnt = 0;
+var parkSearchCnt2 = 0;
+var parkingLoaded = false;
 //공연장 마커
 var placeMarkers = [];
 //테마 정보 저장할 배열
 var themeInformation = [];
-
+//로딩카운터
+var loadCnt = 0;
+var load = document.querySelector(".state");
+var loadImg = document.querySelector(".loadImg");
 //상영물 정보를 그릴 dataPane
 let dataPane = document.querySelector(".container");
 //선택한 사영물의 상세 정보를 그릴 detailData
 let detailData = document.querySelector(".detailInfo");
 //test
 let sectionMap = document.querySelector(".sectionMap");
+//주차장 스위치
+let parkingSw = document.getElementById("parking");
+
 //----------------------------------------함수-------------------------------------
 //포스트 이미지 url 반환 함수
-function getImgUrl(dabomUrl) {//다봄 url삽입
-    return new Promise(function (resolve, reject) {
-        var request = new XMLHttpRequest();
-        request.open("GET", proxy + dabomUrl);
-        request.responseType = "document";
-        request.onload = function () {
-            if (request.readyState === 4) {
-                if (request.status === 200) {
-                    var imgElement = request.responseXML.querySelector("div.leftbox>img");
-                    var imgUrl = imgElement.src;
-                    var splitUrl = imgUrl.split('/')
-                    imgurl = 'http://busandabom.net/images/contents/' + splitUrl[5]
-                    //console.log(imgurl)
-                    resolve(imgurl)
-
-                } else {
-                    console.error(request.status, request.statusText);
-                }
+function getImgUrl(show) {//다봄 url삽입
+    
+    fetch(proxy + show.dabom_url)
+        .then(function (response) {
+            return response.text();
+        }).then(function (html) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(html, 'text/html');
+            var imgElement = doc.querySelector("div.leftbox>img");
+            var imgUrl = imgElement.src;
+            var splitUrl = imgUrl.split('/')
+            imgUrl = 'http://busandabom.net/images/contents/' + splitUrl[5]
+            if (splitUrl[5] == "noimg_classic.jpg" || splitUrl[5] == "noimg_art.jpg" )  {
+                imgUrl = 'http://busandabom.net/img/content/' + splitUrl[5]
             }
-        };
-        request.onerror = function (e) {
-            console.error(request.status, request.statusText);
-        };
-        request.send(null);  // not a POST request, so don't send extra data
-    });
+            
+            show.imgUrl = imgUrl;
+            imgCnt++;
+            loadImg.innerHTML = "포스터 이미지 로딩중 - " + imgCnt + "/" + showNum;
+            if(imgCnt == showNum){
+                loadImg.innerHTML = "완료"
+                setTimeout(()=>{
+                    loadImg.innerHTML = ""
+                },1000)
+            }
+        })
+
 }
 
 //공연 종료일기준으로 정렬후 시작일기준 정렬
@@ -142,6 +163,23 @@ function sortByEnd(arrData) {
         }
     }
     return arrData;
+}
+//가까운순으로 정렬
+function sortByUsrLoc(show){
+    var usrY = usrLatitude;
+    var usrX = usrLongitude;
+    
+    for(var i = show.length-1; i > 0; i--){
+        for(var j = 0; j < i; j++){
+            if(getDistanceFromLatLonInKm(usrY,usrX,show[j].lttd,show[j].lngt) > getDistanceFromLatLonInKm(usrY,usrX,show[j+1].lttd,show[j+1].lngt)){
+                var temp = show[j];
+                show[j] = show[j + 1];
+                show[j + 1] = temp;
+            }
+        }
+    }
+    return show;
+    
 }
 //현재기능-괄호 앞 키워드까지만 검색
 function keywordFilter(str) {
@@ -251,36 +289,19 @@ function clickedShow(show, i, placeMarkers) {
     placeMarkers = []
     //마커이미지 기존이미지로 리셋
     placeMarkers = addMarkerByShow(show, placeMarkers);
+    //주차장 마커 삽입
+    if(parkingSw.checked){
+        addClosePark(selShow,parkingResult,placeMarkers);
+    }
     //공연장 lttd에 해당하는 마커배열의 인덱스 get
     var t = getMarkerIndex(selShow.lttd, placeMarkers);
     //해당 인덱스의 마커 이미지 변경
     placeMarkers[t] = upScaleMarker(placeMarkers[t]);
+
     clusterer.clear();
     addMarkerToMap(placeMarkers);
     clusterer.redraw();
-    /*
-    --------------json 객체의 맴버-----------
-    변수 명         설명                   샘플데이터
-    ==================================================
-    res_no          공연 번호               2020070045
-    title           공연 제목               브로드웨이42번가 [부산]
-    op_st_dt        상영 시작일자           2020-09-04
-    op_ed_dt        상영 종료일자           2020-09-06
-    op_at           오픈런                  N
-    place_id        상영장소 아이디         FC001347          
-    place_nm        상영장소 이름           소향씨어터
-    theme           테마코드                0003,1002,2002
-    runtime         런타임                  2시간 40분
-    showtime        관람회차                금요일(20:00), 토요일 ~ 일요일(14:00,18:30)
-    rating          관람등급                만 9세 이상
-    price           가격                    VIP석 140,000원, OP석 130,000원, R석 120,000원, S석 90,000원, A석 60,000원
-    original        원작명                    
-    casting         출현진                  송일국, 이종혁, 양준모, 최정원, 정영주, 배해선, 전수경 등
-    crew            제작진                  
-    enterprise      기획사                  주)CJ ENM, (주)샘컴퍼니
-    avg_star        평점                    0
-    dabom_url       다봄 url                http://busandabom.net/play/view.nm?lang=ko&amp;url=play&amp;menuCd
-    ------------------------------------------*/
+
     //------------------------------버튼 클릭시 상세정보 띄우기-------------------
     sectionMap.removeChild(sectionMap.firstChild);
     let testDiv = document.createElement('div');
@@ -302,14 +323,19 @@ function clickedShow(show, i, placeMarkers) {
     let avgStarD = document.createElement('p');
     let dabomD = document.createElement('button');
     let getDiret = document.createElement('button');
+    let img = document.createElement('img');
+    img.src = show[i].imgUrl;
+    if(img.src != "http://mpv990422.duckdns.org/imgs/smallSpinner.gif"){
+        img.style.width="240px"
+    }
+    
 
     //dom 내용 추가
     titleD.innerHTML = "제목<br>" + selShow.title;
     whenD.innerHTML = "상영기간<br>" + selShow.op_st_dt + '~' + selShow.op_ed_dt;
     whereD.innerHTML = "장소<br>" + selShow.place_nm;
-
     whereAddr.innerHTML = "주소<br>" + selShow.addr;
-    getDiret.textContent = "길찾아보기(새창으로 이동합니다.)"
+    getDiret.textContent = "길찾아보기"
     getDiret.onclick = function () { window.open("https://map.kakao.com/link/to/" + keywordFilter(selShow.place_nm) + "," + selShow.lttd + "," + selShow.lngt) }
     runtimeD.innerHTML = "상영 시간<br>" + selShow.runtime;
     showtimeD.innerHTML = "상영 시각<br>" + selShow.showtime;
@@ -326,6 +352,7 @@ function clickedShow(show, i, placeMarkers) {
     dabomD.onclick = function () { window.open(selShow.dabom_url); }
 
     //dom 추가ㅣ
+    detailDiv.appendChild(img);
     detailDiv.appendChild(titleD);
     detailDiv.appendChild(whenD);
     detailDiv.appendChild(whereD);
@@ -359,27 +386,6 @@ function getTheme(themeCode, themeInfos) {//themeCode: 테마코드 문자열, t
 }
 
 function initialize() {
-    //장르별 체크박스 가져오기
-    var musicalChecked = document.getElementById("musical");
-    var operaChecked = document.getElementById("opera");
-    var playChecked = document.getElementById("play");
-    var tradChecked = document.getElementById("trad");
-    var exhiChecked = document.getElementById("exhi");
-    var classicChecked = document.getElementById("classic");
-    var concertChecked = document.getElementById("concert");
-    var danceChecked = document.getElementById("dance");
-
-    //체크박스 체크(초기값 지정)
-    musicalChecked.checked = true;
-    operaChecked.checked = true;
-    playChecked.checked = true;
-    tradChecked.checked = true;
-    exhiChecked.checked = true;
-    classicChecked.checked = true;
-    concertChecked.checked = true;
-    danceChecked.checked = true;
-
-
     //장소대입
     for (let x = 0; x < infosKey.length - 2; x++) {
         for (let y = 0; y < infos[infosKey[x]].length; y++) {
@@ -420,20 +426,112 @@ function initialize() {
                     }
                     else {
                         console.log("no Result of " + searchedKeyword);
+                        searchCnt++;
                     }
                 }
             }
         }
+    }
+//공공데이터 기반 주차장
+    for (var tt = 0; tt < parkingArr.length; tt++) {
+        var ps2 = new kakao.maps.services.Places();
+        ps2.keywordSearch(parkingArr[tt].pkNam, function (data, status, pagination) {
+            // 정상적으로 검색이 완료됐으면 
+            var isOver = false;
+            if (status === kakao.maps.services.Status.OK) {
+                for (var ttt = 0; ttt < data.length; ttt++) {
+                    //초기 데이터 삽입
+                    if(parkingResult.length == 0){
+                    parkingResult.push(data[ttt]);
+                    }
+                    else{
+                        for(var r = 0; r <parkingResult.length;r++){
+                            //중복은 입력안함
+                            if(parkingResult[r].place_name == data[ttt].place_name){
+                                isOver = true;
+                            }
+                        }
+                        //중복이 없으면 push
+                        if(!isOver){
+                            parkingResult.push(data[ttt]);
+                        }
+                    }
+                }
+                parkSearchCnt++;
+            }
+            else {
+                parkSearchCnt++;
+            }
+            if(parkSearchCnt == maxParkSearchCnt){
+                afterOpenApiParkingSearch();
+            }
+        });
     }
 
 
     afterSearched();
 
 }
+function afterOpenApiParkingSearch(){
+    //"공연장소+주차장 카맵" api 검색
+    for (let x = 0; x < infosKey.length - 2; x++) {
+        for (let y = 0; y < infos[infosKey[x]].length; y++) {
+            var nowShow = infos[infosKey[x]][y];
+            var ps2 = new kakao.maps.services.Places();
+            ps2.keywordSearch("부산"+ keywordFilter(nowShow.place_nm) +"주차장", function (data, status, pagination) {
+                // 정상적으로 검색이 완료됐으면 
+            var isOver = false;
+            if (status === kakao.maps.services.Status.OK) {
+                for (var i = 0; i < data.length; i++) {
+                    //초기 데이터 삽입
+                    if(parkingResult.length == 0){
+                    parkingResult.push(data[i]);
+                    }
+                    else{
+                        for(var j = 0; j <parkingResult.length;j++){
+                            //중복은 입력안함
+                            if(parkingResult[j].place_name == data[i].place_name){
+                                isOver = true;
+                            }
+                        }
+                        //중복이 없으면 push
+                        if(!isOver){
+                            parkingResult.push(data[i]);
+                        }
+                    }
+                }
+                parkSearchCnt2++;
+            }
+            else {
+                parkSearchCnt2++;
+            }
+            });
+        }
+    }
+}
 function afterSearched() {
+        //장르별 체크박스 가져오기
+        var musicalChecked = document.getElementById("musical");
+        var operaChecked = document.getElementById("opera");
+        var playChecked = document.getElementById("play");
+        var tradChecked = document.getElementById("trad");
+        var exhiChecked = document.getElementById("exhi");
+        var classicChecked = document.getElementById("classic");
+        var concertChecked = document.getElementById("concert");
+        var danceChecked = document.getElementById("dance");
+    
+        //체크박스 체크(초기값 지정)
+        musicalChecked.checked = true;
+        operaChecked.checked = true;
+        playChecked.checked = true;
+        tradChecked.checked = true;
+        exhiChecked.checked = true;
+        classicChecked.checked = true;
+        concertChecked.checked = true;
+        danceChecked.checked = true;
     var show = []
-    //검색이 끝나면 실행(비동기)
-    if (noPlaceCnt == searchCnt) {
+    //모든 검색이 끝나면 실행
+    if (noPlaceCnt == searchCnt && parkSearchCnt == maxParkSearchCnt && parkSearchCnt2 == showNum) {
         //console.log(resultDatas);
         //검색결과를 토대로 재기입
         for (let x = 0; x < infosKey.length - 2; x++) {
@@ -483,8 +581,13 @@ function afterSearched() {
         for (var p = 0; p < infos.dance.length; p++) {
             show.push(infos.dance[p]);
         }
-        show = sortByEnd(show);
 
+        loadImg.innerHTML = "포스터 이미지 로딩중"
+        show = sortByEnd(show);
+        for(var tt = 0; tt< show.length;tt++){
+            show[tt].imgUrl = "http://mpv990422.duckdns.org/imgs/smallSpinner.gif"
+            getImgUrl(show[tt]);
+        }
         placeMarkers = []; //마커 배열 초기화
         placeMarkers = addMarkerByShow(show, placeMarkers);
         addMarkerToMap(placeMarkers);
@@ -498,7 +601,6 @@ function afterSearched() {
         clusterer.redraw();
 
         drawInform(show);
-        //console.log(infos);
         loadingScreen.style.display = 'none';
         console.log("initialize done");////////////////////////////////////////////////////////코드 실행 최종단
     }
@@ -522,9 +624,12 @@ function checkBoxClicked() {
     var concertChecked = document.getElementById("concert").checked;
     var danceChecked = document.getElementById("dance").checked;
     var playingChecked = document.getElementById("playing").checked;
+    var sort = document.getElementById("sort");
+
     var show = []
     var dateInput = document.getElementById("datepicker");
-    dateInput.value=null;
+
+    dateInput.value="";
     //console.log(musicalChecked + ", " + operaChecked + ", " + playChecked)
     //console.log(infos);
     if (musicalChecked) {
@@ -576,15 +681,24 @@ function checkBoxClicked() {
         }
     }
     var playingShow = []
-    show = sortByEnd(show);
     if (playingChecked) {
-        for (var ii = 0; ii < show.length; ii++) {
+        for (var ii = 0; ii <= show.length-1; ii++) {
             if (show[ii].op_st_dt <= today) {
                 playingShow.push(show[ii])
             }
         }
         show = playingShow;
     }
+    
+
+
+    if(sort.checked){
+        show = sortByUsrLoc(show);
+    }
+    else{
+        show = sortByEnd(show);
+    }
+
     placeMarkers = []; //마커 배열 초기화
     placeMarkers = addMarkerByShow(show, placeMarkers);
     clusterer.clear();
@@ -640,7 +754,7 @@ function allUncheck() {
 }
 //상영물 배열을 받고 라디오버튼을 그리는 버튼
 function dateComfirmed() {
-
+    
     var playingChecked = document.getElementById("playing");
     var musicalChecked = document.getElementById("musical").checked;
     var operaChecked = document.getElementById("opera").checked;
@@ -658,7 +772,7 @@ function dateComfirmed() {
 
     if (selDate != "") {
         selDate = new Date(selDate);
-        selDate = selDate.toISOString();
+        selDate = selDate.toISOString().split("T")[0];
         console.log(selDate);
         if (selDate < today) {
             alert("유효하지않은 날짜입니다")
@@ -742,15 +856,20 @@ function drawInform(show) {
         outOfOutBox.className = "outOfOutBox"
         let outBox = document.createElement("div");
         outBox.className = "outBox"
-
+        let tooltipBox = document.createElement("div");
+        tooltipBox.className = "tooltipBox"
+        let tooltip = document.createElement("span");
+        tooltip.className = "tooltip";
         labels.onclick = function () {
             clickedShow(show, i, placeMarkers);
             radioBtn.checked = "checked"
         }
+
         var length = 15//...포함 15자
         var shortTitle = show[i].title
         if (shortTitle.length > length) {
             shortTitle = shortTitle.substr(0, length - 2) + "..."
+        
         }
         outBox.innerHTML = '<p class="inner">' + shortTitle + "</p>"
 
@@ -782,29 +901,40 @@ function drawInform(show) {
         outBox.innerHTML +=
             '<p class="inner">' + show[i].op_st_dt + '~' + show[i].op_ed_dt + "</p>"
             + '<p class="inner">' + show[i].place_nm + "</p>";
-
+        tooltip.innerHTML = show[i].title
         //dom 추가
         topDiv.appendChild(labelTopDiv);
         labelTopDiv.appendChild(labels);
+        outOfOutBox.appendChild(tooltipBox);
+        tooltipBox.appendChild(tooltip);
         labels.appendChild(radioBtn);
         labels.appendChild(outOfOutBox);
         outOfOutBox.appendChild(outBox);
     }
 }
 /////////////////////////////////////////////////////////메인함수///////////////////////////////////////////////////////////////////////
+
 function main() {
-    //모든데이터 로드 완료시 실행
-    if (musicalLoaded && operaLoaded && playLoaded && tradLoaded && exhiLoaded && classicLoaded && concertLoaded && danceLoaded && placeLoaded && exPlaceLoaded && themeLoaded) {
-        console.log("sorting");
+    //모든데이터 fetch 완료시 실행
+    if (musicalLoaded && operaLoaded && playLoaded && tradLoaded && exhiLoaded && classicLoaded && concertLoaded && danceLoaded && placeLoaded && exPlaceLoaded && themeLoaded && parkingLoaded) {
+
         //상영 종류별 데이터 정렬 0~2 상영종류, 3 장소, 4 테마
         for (var i = 0; i < infosKey.length - 2; i++) {
             infos[infosKey[i]] = sortByEnd(infos[infosKey[i]]);
+            showNum += infos[infosKey[i]].length;
         }
-        //console.log(infos)
+        console.log("sorting done");
+        loadCnt++;
+        load.innerHTML = "Loading.. " + loadCnt + "/13";
+
+        console.log(today)
+        console.log(infos)
         //console.log(resultDatas)
         //console.log(placesInformation)
         //초기화
         console.log("initializing");
+        loadCnt++;
+        load.innerHTML = "initializing... "
         initialize();
 
         clusterer.redraw();
@@ -813,6 +943,7 @@ function main() {
     //안됐으면 다시 main()호출하면서 ture될때까지 실행, 0.5s 텀
     else {
         console.log("waiting for data")
+        load.innerHTML = "waiting for data ";
         setTimeout(() => {
             main();
         }, 500)
@@ -840,6 +971,8 @@ fetch(initThemeUrl)
                 infos.theme = themeInformation;
                 console.log("theme done");
                 themeLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. "+ loadCnt +"/13"
             });
 
     });
@@ -863,6 +996,7 @@ fetch(initPlaceUrl)//공연장 초기값
                     placesInformation[i].type = "place";
                 }
                 placeLoaded = true;
+                
             });
 
     });
@@ -888,6 +1022,8 @@ fetch(initExPlaceUrl)//공연장 초기값
                 infos.place = placesInformation;
                 console.log("place done");
                 exPlaceLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. "+ loadCnt +"/13"
             });
     });
 //오페라 정보 fetch
@@ -918,6 +1054,8 @@ fetch(initOperaUrl)//오페라 초기값
                 infos.opera = operaInformation;
                 console.log("opera done");
                 operaLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. "+ loadCnt +"/13"
             });
     });
 
@@ -949,6 +1087,8 @@ fetch(initPlayUrl)//연극 초기값
                 infos.play = playInformation;
                 console.log("play done");
                 playLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. "+ loadCnt +"/13"
             });
     });
 //전통예술 fetch
@@ -979,6 +1119,8 @@ fetch(initTradUrl)// 초기값
                 infos.trad = tradInformation;
                 console.log("tradition done");
                 tradLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. "+ loadCnt +"/13";
             });
     });
 
@@ -1010,6 +1152,8 @@ fetch(initExhiUrl)// 초기값
                 infos.exhi = exhiInformation;
                 console.log("exhibition done");
                 exhiLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. "+ loadCnt +"/13";
             });
     });
 
@@ -1041,6 +1185,8 @@ fetch(initClassicUrl)// 초기값
                 infos.classic = classicInformation;
                 console.log("classic done");
                 classicLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. "+ loadCnt +"/13";
             });
     });
 
@@ -1072,6 +1218,8 @@ fetch(initConcertUrl)// 초기값
                 infos.concert = concertInformation;
                 console.log("concert done");
                 concertLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. "+ loadCnt +"/13";
             });
     });
 
@@ -1103,6 +1251,8 @@ fetch(initDanceUrl)// 초기값
                 infos.dance = danceInformation;
                 console.log("dance done");
                 danceLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. "+ loadCnt +"/13";
             });
     });
 
@@ -1135,8 +1285,39 @@ fetch(initMusicalUrl)//뮤지컬 초기 값
                 infos.musical = musicalInformation;
                 console.log("musical done");
                 musicalLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. "+ loadCnt +"/13";
 
             });
     });
-                    //동작시킬 메인함수 호출
-                    main();
+
+
+
+fetch(initParking)//주차장
+    .then((res) => res.json())
+    .then((resJson) => {
+        var numOfRows = resJson.getPblcPrkngInfo.totalCount;
+        var parkingUrl = proxy + parking + appKey + commonApiLink + numOfRows + type;
+        fetch(parkingUrl)
+            .then((res) => res.json())
+            .then((resJson) => {
+                var parking = resJson.getPblcPrkngInfo.item;
+                //도로명주소 존재하는 데이터만 뽑기
+
+                for (var i = 0; i < numOfRows; i++) {
+                    if (parking[i].doroAddr != '-') {
+                        parkingArr.push(parking[i]);
+                        maxParkSearchCnt++;
+                    }
+                }
+                console.log("parking done");
+                parkingLoaded = true;
+                loadCnt++;
+                load.innerHTML = "Loading.. " + loadCnt + "/13";
+
+            });
+    });
+//동작시킬 메인함수 호출
+main();
+
+
