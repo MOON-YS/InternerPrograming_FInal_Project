@@ -269,7 +269,6 @@ function isOverlap(lat, markerArray, type) {
 			else {
 				isOverlap = false;
 			}
-
 		}
 		else {
 			if (posLat - lat < 0.00001) {
