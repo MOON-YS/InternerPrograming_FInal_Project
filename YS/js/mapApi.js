@@ -1,8 +1,10 @@
 //사용자 좌표값을 저장할곳
-var usrLatitude;
-var usrLongitude;
+var usrLatitude = 0;
+var usrLongitude = 0;
 var usrMarker;
-var defaultMarker = new kakao.maps.Marker({});
+//기본 마커-사용안함
+//var defaultMarker = new kakao.maps.Marker({});
+//타입별 마커이미지 url
 const playMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/green.png'
 const operaMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/pink.png'
 const musicalMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/purple.png'
@@ -13,50 +15,61 @@ const classicMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/light_gre
 const concertMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/yellow.png'
 const danceMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/black.png'
 const parkMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/parkMarker.png'
+const selMarkerUrl = 'https://mpv990422.duckdns.org/imgs/markerImg/selMarker.gif'
 
-//뮤지컬 마커
+//마커클릭 동작을 제어하기위한 변수
+var MarkerClicked = false;
+var showClicked = false;
+
+//뮤지컬 마커 이미지
 var musicalMarkerImage = new kakao.maps.MarkerImage(
 	musicalMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
-//오페라 마커
+//오페라 마커 이미지
 var operaMarkerImage = new kakao.maps.MarkerImage(
 	operaMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
-//연극 마커
+//연극 마커 이미지
 var playMarkerImage = new kakao.maps.MarkerImage(
 	playMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
-//전통예술 마커
+//전통예술 마커 이미지
 var tradMarkerImage = new kakao.maps.MarkerImage(
 	tradMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
-//전시 마커
+//전시 마커 이미지
 var exhiMarkerImage = new kakao.maps.MarkerImage(
 	exhiMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
-//클래식 마커
+//클래식 마커 이미지
 var classicMarkerImage = new kakao.maps.MarkerImage(
 	classicMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
-//콘서트 마커
+//콘서트 마커 이미지
 var concertMarkerImage = new kakao.maps.MarkerImage(
 	concertMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
-//무용 마커
+//무용 마커 이미지
 var danceMarkerImage = new kakao.maps.MarkerImage(
 	danceMarkerUrl,
 	new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+//주차장 마커 이미지
 var parkMarkerImage = new kakao.maps.MarkerImage(
 	parkMarkerUrl,
 		new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
+//선택된 마커 이미지
+var selMarkerImage = new kakao.maps.MarkerImage(
+	selMarkerUrl,
+		new kakao.maps.Size(80, 80), new kakao.maps.Point(40, 80));
 		
-//중복 마커
+		
+//중복 마커 - 아이보리
 var overMarkerImage = new kakao.maps.MarkerImage(
 overMarkerUrl,
 new kakao.maps.Size(28, 40), new kakao.maps.Point(14, 40));
 
 
-/*//마커배열내의 마커를 전부 기본마커로 리셋
+/*//마커배열내의 마커를 전부 기본마커로 리셋 -사용안함
 function resetMarkerImg(markerArr, img) {
 	for (var i = 0; i < markerArr.length; i++) {
 		markerArr[i].setImage(img);
@@ -97,11 +110,13 @@ function usrLocation() { //사용자 위치허가 이후설정
 	});
 }
 
-navigator.geolocation.getCurrentPosition(function (pos) { // 사용자 현재위치가 받을수있을대 실행됨
+// 사용자 현재위치가 받을수있을대 실행됨
+navigator.geolocation.getCurrentPosition(function (pos) { 
 	usrLatitude = pos.coords.latitude;
 	usrLongitude = pos.coords.longitude;
 	usrLocation();//사용자 현재위치에 마커 표시 밑 맵 센터로
 });
+
 //맵에 마커를 추가하기위한 클러스터
 var clusterer = new kakao.maps.MarkerClusterer({
 	map: map,
@@ -110,11 +125,11 @@ var clusterer = new kakao.maps.MarkerClusterer({
 	minClusterSize: 100,
 })
 //상영정보를 받아 마커 생성하여 배열에 마커 삽입
-function addMarkerToArray(show, targetMarkerArry) {
+function addMarkerToArray(show, targetMarkerArry,shows) {
 	var Marker = new kakao.maps.Marker({
 		position: new kakao.maps.LatLng(show.lttd, show.lngt),
+		clickable: true
 	});
-
 	if (show.type == "musical") {
 		Marker.setImage(musicalMarkerImage);
 	}
@@ -139,6 +154,63 @@ function addMarkerToArray(show, targetMarkerArry) {
 	else if (show.type == "dance") {
 		Marker.setImage(danceMarkerImage);
 	}
+	kakao.maps.event.addListener(Marker, 'click', function() {
+		// 마커 위에 인포윈도우를 표시합니다
+
+		var selMarkerLat =  show.lttd;
+		var selMarkerLng = show.lngt;
+		var temp = [];
+		for(var i=0; i<shows.length;i++){
+			if(shows[i].place_nm == show.place_nm){
+				temp.push(shows[i]);
+			}
+		}
+			if(Marker.T.lf.height == 40){
+				MarkerClicked = true;
+			}
+			else{
+				MarkerClicked = !MarkerClicked;
+			}
+			
+			if(sectionMap.firstChild.className == "detailInfoPannel"){
+				sectionMap.removeChild(sectionMap.firstChild);
+			}
+
+			if(MarkerClicked){
+				drawInform(temp);
+				setCenter(selMarkerLat, selMarkerLng);
+				//공연장 lttd에 해당하는 마커배열의 인덱스 get
+				placeMarkers = []
+				//마커이미지 기존이미지로 리셋
+				placeMarkers = addMarkerByShow(shows, placeMarkers);
+				var t = getMarkerIndex(selMarkerLat, placeMarkers);
+				//해당 인덱스의 마커 이미지 변경
+				placeMarkers[t].setImage(selMarkerImage);
+				placeMarkers[t].setZIndex(20);
+				if(parkingSw.checked){
+					addClosePark(show,parkingResult,placeMarkers);
+				}
+				clusterer.clear();
+				addMarkerToMap(placeMarkers);
+				clusterer.redraw();
+				console.log(Marker) 
+			}
+			else{
+				
+				drawInform(shows);
+				if(parkingSw.checked){
+					addClosePark(show,parkingResult,placeMarkers);
+				}
+				placeMarkers = []
+				//마커이미지 기존이미지로 리셋
+				placeMarkers = addMarkerByShow(shows, placeMarkers);
+				clusterer.clear();
+				addMarkerToMap(placeMarkers);
+				clusterer.redraw();
+			}
+
+
+  });
 	targetMarkerArry.push(Marker);
 
 }
@@ -230,12 +302,11 @@ function getMarkerIndex(lat, markerArray) {
 				result = i;
 				break;
 			}
-
 		}
 	}
 	return result;
 }
-//마커 크기 키우기
+/*//마커 크기 키우기-사용안함
 function upScaleMarker(marker){
 	var newSize = new kakao.maps.Size(36, 48);
 	var newPos = new kakao.maps.Point(18, 48);
@@ -248,7 +319,7 @@ function upScaleMarker(marker){
 	)
 	marker.setImage(newMarkerImg);
 	return marker;
-}
+}*/
 //공연정보를 받고 인근 공영주차장(1km내) 마커 출력
 function addClosePark(selShow, park, placeMarker){
 	var selY = selShow.lttd;
