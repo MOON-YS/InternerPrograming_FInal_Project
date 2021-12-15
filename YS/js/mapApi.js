@@ -193,7 +193,7 @@ function addMarkerToArray(show, targetMarkerArry,shows) {
 				clusterer.clear();
 				addMarkerToMap(placeMarkers);
 				clusterer.redraw();
-				console.log(Marker) 
+				//console.log(Marker) 
 			}
 			else{
 				
@@ -226,8 +226,10 @@ function isOverlap(lat, markerArray, type) {
 
 	for (var i = 0; i < markerArray.length; i++) {
 		var pos = markerArray[i].getPosition();
+		//마커 이미지 url가져우기
 		var markerUrl = markerArray[i].T.Yj;
-		if( markerUrl == musicalMarkerUrl){//들어온 마커의 상영종류를 판별
+		//들어온 마커의 상영종류를 이미지 url로판별
+		if( markerUrl == musicalMarkerUrl){
 			curType = "musical"
 		}
 		else if(markerUrl == operaMarkerUrl){
