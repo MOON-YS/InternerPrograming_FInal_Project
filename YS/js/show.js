@@ -374,7 +374,7 @@ function clickedShow(show, i, placeMarkers) {
     closeButton.className = "closeButton";
     //처음엔 로딩이미지
     img.src = show[i].imgUrl;
-    if (img.src != "http://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/smallSpinner.gif") {
+    if (img.src != "http://victo-nas.duckdns.org/imgs/smallSpinner.gif") {
         img.style.width = "240px"
     }
 
@@ -642,7 +642,7 @@ function afterSearched() {
         loadImg.innerHTML = "포스터 이미지 로딩중"
         show = sortByEnd(show);
         for (var tt = 0; tt < show.length; tt++) {
-            show[tt].imgUrl = "http://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/smallSpinner.gif"
+            show[tt].imgUrl = "http://victo-nas.duckdns.org/imgs/smallSpinner.gif"
             getImgUrl(show[tt]);
         }
         init2(show);
