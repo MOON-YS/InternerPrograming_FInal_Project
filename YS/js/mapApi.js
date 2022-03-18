@@ -5,18 +5,17 @@ var usrMarker;
 //기본 마커-사용안함
 //var defaultMarker = new kakao.maps.Marker({});
 //타입별 마커이미지 url
-const markerUrl = 'https://moon-ys.github.io/InternerPrograming_FInal_Project/YS/imgs/makerImg/'
-const playMarkerUrl = markerUrl + 'green.png'
-const operaMarkerUrl = markerUrl + 'pink.png'
-const musicalMarkerUrl = markerUrl + 'purple.png'
-const overMarkerUrl = markerUrl + 'ivory.png'
-const tradMarkerUrl = markerUrl + 'red.png'
-const exhiMarkerUrl = markerUrl + 'skyblue.png'
-const classicMarkerUrl = markerUrl + 'light_green.png'
-const concertMarkerUrl = markerUrl + 'yellow.png'
-const danceMarkerUrl = markerUrl + 'black.png'
-const parkMarkerUrl = markerUrl + 'parkMarker.png'
-const selMarkerUrl = markerUrl + 'selMarker.gif'
+const playMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/green.png'
+const operaMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/pink.png'
+const musicalMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/purple.png'
+const overMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/ivory.png'
+const tradMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/red.png'
+const exhiMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/skyblue.png'
+const classicMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/light_green.png'
+const concertMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/yellow.png'
+const danceMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/black.png'
+const parkMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/parkMarker.png'
+const selMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/selMarker.gif'
 
 //마커클릭 동작을 제어하기위한 변수
 var MarkerClicked = false;
@@ -126,7 +125,7 @@ var clusterer = new kakao.maps.MarkerClusterer({
 	minClusterSize: 100,
 })
 //상영정보를 받아 마커 생성하여 배열에 마커 삽입
-function addMarkerToArray(show, targetMarkerArry, shows) {
+function addMarkerToArray(show, targetMarkerArry,shows) {
 	var Marker = new kakao.maps.Marker({
 		position: new kakao.maps.LatLng(show.lttd, show.lngt),
 		clickable: true
