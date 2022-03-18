@@ -5,17 +5,18 @@ var usrMarker;
 //기본 마커-사용안함
 //var defaultMarker = new kakao.maps.Marker({});
 //타입별 마커이미지 url
-const playMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/green.png'
-const operaMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/pink.png'
-const musicalMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/purple.png'
-const overMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/ivory.png'
-const tradMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/red.png'
-const exhiMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/skyblue.png'
-const classicMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/light_green.png'
-const concertMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/yellow.png'
-const danceMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/black.png'
-const parkMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/parkMarker.png'
-const selMarkerUrl = 'https://victo-nas.duckdns.org/imgs/markerImg/selMarker.gif'
+const markerUrl = 'https://moon-ys.github.io/InternerPrograming_FInal_Project/YS/imgs/makerImg/'
+const playMarkerUrl = markerUrl + 'green.png'
+const operaMarkerUrl = markerUrl + 'pink.png'
+const musicalMarkerUrl = markerUrl + 'purple.png'
+const overMarkerUrl = markerUrl + 'ivory.png'
+const tradMarkerUrl = markerUrl + 'red.png'
+const exhiMarkerUrl = markerUrl + 'skyblue.png'
+const classicMarkerUrl = markerUrl + 'light_green.png'
+const concertMarkerUrl = markerUrl + 'yellow.png'
+const danceMarkerUrl = markerUrl + 'black.png'
+const parkMarkerUrl = markerUrl + 'parkMarker.png'
+const selMarkerUrl = markerUrl + 'selMarker.gif'
 
 //마커클릭 동작을 제어하기위한 변수
 var MarkerClicked = false;
