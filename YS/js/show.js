@@ -296,7 +296,7 @@ function clickedShow(show, i, placeMarkers) {
     //공연장 lttd에 해당하는 마커배열의 인덱스 get
     var t = getMarkerIndex(selShow.lttd, placeMarkers);
     //해당 인덱스의 마커 이미지 변경
-    placeMarkers[t] = upScaleMarker(placeMarkers[t]);
+    //placeMarkers[t] = upScaleMarker(placeMarkers[t]);
 
     clusterer.clear();
     addMarkerToMap(placeMarkers);
