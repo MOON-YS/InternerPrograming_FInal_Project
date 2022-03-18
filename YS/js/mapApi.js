@@ -126,7 +126,7 @@ var clusterer = new kakao.maps.MarkerClusterer({
 	minClusterSize: 100,
 })
 //상영정보를 받아 마커 생성하여 배열에 마커 삽입
-function addMarkerToArray(show, targetMarkerArry,shows) {
+function addMarkerToArray(show, targetMarkerArry, shows) {
 	var Marker = new kakao.maps.Marker({
 		position: new kakao.maps.LatLng(show.lttd, show.lngt),
 		clickable: true
