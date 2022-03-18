@@ -862,6 +862,7 @@ function drawInform(show) {
         tooltip.className = "tooltip";
         labels.onclick = function () {
             clickedShow(show, i, placeMarkers);
+            console.log(show[i].lttd);
             radioBtn.checked = "checked"
         }
 
