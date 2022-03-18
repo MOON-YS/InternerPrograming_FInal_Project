@@ -272,7 +272,7 @@ function isSame(str1, str2) {
 function addMarkerByShow(show, placeMarkers) {
     for (var t = 0; t < show.length; t++) {
         if (!(isOverlap(show[t].lttd, placeMarkers, show[t].type))) {//중복체크후 마커 추가
-            addMarkerToArray(show[t], placeMarkers);
+            addMarkerToArray(show[t], placeMarkers,show);
         }
         else {
         }
