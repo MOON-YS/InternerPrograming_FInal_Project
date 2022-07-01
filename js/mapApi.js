@@ -5,17 +5,18 @@ var usrMarker;
 //기본 마커-사용안함
 //var defaultMarker = new kakao.maps.Marker({});
 //타입별 마커이미지 url
-const playMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/green.png'
-const operaMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/pink.png'
-const musicalMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/purple.png'
-const overMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/ivory.png'
-const tradMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/red.png'
-const exhiMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/skyblue.png'
-const classicMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/light_green.png'
-const concertMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/yellow.png'
-const danceMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/black.png'
-const parkMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/parkMarker.png'
-const selMarkerUrl = 'https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/MoonYoonsik/YS/imgs/makerImg/selMarker.gif'
+const gitUrl = "https://raw.githubusercontent.com/MOON-YS/InternerPrograming_FInal_Project/main/imgs/makerImg/"
+const playMarkerUrl = gitUrl + 'green.png'
+const operaMarkerUrl = gitUrl + 'pink.png'
+const musicalMarkerUrl = gitUrl + 'purple.png'
+const overMarkerUrl = gitUrl + 'ivory.png'
+const tradMarkerUrl = gitUrl + 'red.png'
+const exhiMarkerUrl = gitUrl + 'skyblue.png'
+const classicMarkerUrl = gitUrl + 'light_green.png'
+const concertMarkerUrl = gitUrl + 'yellow.png'
+const danceMarkerUrl = gitUrl + 'black.png'
+const parkMarkerUrl = gitUrl + 'parkMarker.png'
+const selMarkerUrl = gitUrl + 'selMarker.gif'
 
 //마커클릭 동작을 제어하기위한 변수
 var MarkerClicked = false;
