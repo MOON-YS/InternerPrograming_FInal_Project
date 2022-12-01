@@ -24,4 +24,6 @@
 1. 공공데이터 포털 www.data.go.kr
 2. 지도 API (kakaomap API) https://apis.map.kakao.com/web/
 
-## 최종 발표 자료
+## 결과 리포트 & 최종 발표
+1. 최종 발표 : https://docs.google.com/presentation/d/1zjchrVJy5aUAHAUnW-FWdKWxztpUDQvl/edit?usp=sharing&ouid=112311592766790239454&rtpof=true&sd=true
+2. 발표 자료(pptx) : https://docs.google.com/document/d/1LYA7vRXSW1R8VuydJRLjpTd_OeslZRVW/edit?usp=sharing&ouid=112311592766790239454&rtpof=true&sd=true
